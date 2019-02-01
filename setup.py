@@ -12,7 +12,7 @@ def read(fname):
 setup(
     name = "flippy",
     author = "FreeWheel",
-    description = "FreeWheel Linear Programming API for Python",
+    description = "FreeWheel Linear Programming Interface for Python",
     long_description = read('README.md'),
     version = flippy.version,
     packages = find_packages(),
