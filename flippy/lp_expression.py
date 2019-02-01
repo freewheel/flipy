@@ -1,0 +1,3 @@
+
+class LpExression:
+    pass

@@ -1,0 +1,3 @@
+
+class LpVariable:
+    pass
