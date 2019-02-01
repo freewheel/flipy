@@ -54,6 +54,7 @@ confidence=
 # --disable=W"
 
 disable=arguments-differ,
+	missing-docstring
 	duplicate-code,
 	abstract-method,
 	unused-argument,
