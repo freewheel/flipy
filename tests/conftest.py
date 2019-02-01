@@ -1,9 +1,9 @@
 import pytest
-from flippy import lp_variable
+from flippy.lp_variable import LpVariable
 
 
 @pytest.fixture
 def x():
-    return lp_variable.LpVariable('x', low_bound=0, up_bound=10)
+    return LpVariable('x', low_bound=0, up_bound=10)
 
 

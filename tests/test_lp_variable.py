@@ -1,5 +1,5 @@
 import pytest
-from flippy.lp_variable import LpVariable
+from flippy.lp_variable import LpVariable, VarType
 
 
 @pytest.mark.usefixtures('x')
@@ -21,13 +21,13 @@ class TestLpVariable(object):
     def test_types(self):
         with pytest.raises(ValueError) as e:
             LpVariable('z', var_type='None')
-        assert 'var_type must be one of "Continuous", "Integer", "Binary"' in str(e.value)
-        z = LpVariable('z', var_type='Integer')
+        assert 'var_type must be one of Continuous, Integer, Binary' in str(e.value)
+        z = LpVariable('z', var_type=VarType.Integer)
         with pytest.raises(TypeError) as e:
             z.set_value(3.5)
         assert 'must match var_type' in str(e.value)
         z.set_value(3)
-        z = LpVariable('z', var_type='Binary')
+        z = LpVariable('z', var_type=VarType.Binary)
         with pytest.raises(TypeError) as e:
             z.set_value(3.5)
         assert 'must match var_type' in str(e.value)
@@ -35,7 +35,9 @@ class TestLpVariable(object):
         z.set_value(1)
 
     def test_value(self, x):
-        assert x.evaluate() is None
+        with pytest.raises(ValueError) as e:
+            x.evaluate()
+        assert 'is None' in str(e.value)
         x.set_value(2)
         assert x.evaluate() == 2
         with pytest.raises(ValueError) as e:

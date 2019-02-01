@@ -1,20 +1,42 @@
+from enum import Enum
+
+
+class VarType(Enum):
+    Continuous = 1
+    Integer = 2
+    Binary = 3
+
+
 class LpVariable:
-    def __init__(self, name, var_type='Continuous', up_bound=None, low_bound=None):
+    def __init__(self, name, var_type=VarType.Continuous, up_bound=None, low_bound=None):
         self._name = name
-        if var_type not in ['Continuous', 'Integer', 'Binary']:
-            raise ValueError('var_type must be one of "Continuous", "Integer", "Binary" not %s' % var_type)
-        self.var_type = var_type
+
+        self._var_type = None
         self._up_bound = None
         self._low_bound = None
+        self._value = None
+
+        self.var_type = var_type
         self.up_bound = up_bound
         self.low_bound = low_bound
-        self._value = None
 
     @property
     def name(self):
         return self._name
 
+    @property
+    def var_type(self):
+        return self._var_type
+
+    @var_type.setter
+    def var_type(self, v_type):
+        if not isinstance(v_type, VarType):
+            raise ValueError('var_type must be one of Continuous, Integer, Binary not %s' % v_type)
+        self._var_type = v_type
+
     def evaluate(self):
+        if self._value is None:
+            raise ValueError('Value of variable %s is None' % self.name)
         return self._value
 
     def set_value(self, value):
@@ -24,10 +46,10 @@ class LpVariable:
         if self.up_bound is not None:
             if self.up_bound < value:
                 raise ValueError('value {v} cannot be above upper bound {b}'.format(v=value, b=self.up_bound))
-        if self.var_type == 'Integer':
+        if self.var_type is VarType.Integer:
             if int(value) != value:
                 raise TypeError('value {v} must match var_type {t}'.format(v=value, t=self.var_type))
-        if self.var_type == 'Binary':
+        if self.var_type is VarType.Binary:
             if value not in [0, 1]:
                 raise TypeError('value {v} must match var_type {t}'.format(v=value, t=self.var_type))
         self._value = value
