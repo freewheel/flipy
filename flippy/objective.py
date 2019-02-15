@@ -26,6 +26,6 @@ class Objective(LpExpression):
     @sense.setter
     def sense(self, sense):
         if sense not in [Minimize, Maximize]:
-            raise ValueError("Sense must be one of <class 'flippy.objective.Minimize'>, "
-                             "<class 'flippy.objective.Maximize'> not %s" % sense)
+            raise ValueError("Sense must be one of %s, "
+                             "%s not %s" % (Minimize, Maximize, sense))
         self._sense = sense
