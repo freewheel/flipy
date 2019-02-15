@@ -18,10 +18,10 @@ class LpExpression(object):
         self.const = constant
 
     def __eq__(self, other):
-        if not isinstance(other, LpExpression) or set(self.expr.keys()) != (other.expr.keys()) or not math.isclose(self.const, other.const):
+        if not isinstance(other, LpExpression) or not math.isclose(self.const, other.const):
             return False
-        for var, coeff in self.expr.items():
-            if not math.isclose(coeff, self.expr[var]):
+        for var in set(self.expr.keys()) | set(other.expr.keys()):
+            if not math.isclose(self.expr[var], other.expr[var]):
                 return False
         return True
 
