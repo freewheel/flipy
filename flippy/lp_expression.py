@@ -20,10 +20,7 @@ class LpExpression(object):
     def __eq__(self, other):
         if not isinstance(other, LpExpression) or not math.isclose(self.const, other.const):
             return False
-        for var in set(self.expr.keys()) | set(other.expr.keys()):
-            if not math.isclose(self.expr[var], other.expr[var]):
-                return False
-        return True
+        return all(math.isclose(self.expr[var], other.expr[var]) for var in set(self.expr.keys()) | set(other.expr.keys()))
 
     def evaluate(self):
         return sum(var.evaluate() * coeff for var, coeff in self.expr.items()) + self.const
