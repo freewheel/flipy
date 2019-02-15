@@ -16,6 +16,11 @@ class LpExpression(object):
             self.expr = defaultdict(int, expression)
         self.const = constant
 
+    def __eq__(self, other):
+        if isinstance(other, LpExpression) and other.expr == self.expr and other.const == self.const:
+            return True
+        return False
+
     def evaluate(self):
         return sum(var.evaluate() * coeff for var, coeff in self.expr.items()) + self.const
 
