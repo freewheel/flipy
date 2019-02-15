@@ -49,3 +49,6 @@ class TestLpExpression(object):
         assert expression.const == 8
         expression.add_constant(-8.2)
         assert expression.const - (-0.2) < 1e-07
+
+    def test__eq__(self, expression, x):
+        assert expression == LpExpression(name='text_expr_3', expression={x: 998}, constant=8.0) 
