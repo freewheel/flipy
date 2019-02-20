@@ -35,8 +35,3 @@ class LpExpression(object):
 
     def add_constant(self, const):
         self.const += const
-
-    def __eq__(self, other):
-        return (isinstance(other, LpExpression)
-                and self.expr == other.expr
-                and self.const == other.const)

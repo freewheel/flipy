@@ -9,4 +9,4 @@ def x():
 
 @pytest.fixture
 def y():
-    return LpVariable('x', low_bound=0, up_bound=5)
+    return LpVariable('y', low_bound=0, up_bound=5)
