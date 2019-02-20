@@ -2,7 +2,7 @@ import operator
 import warnings
 
 from flippy.lp_expression import LpExpression
-from flippy.lp_variable import LpVariable
+from flippy.lp_variable import LpVariable, VarType
 
 
 class LpConstraint:
@@ -44,10 +44,11 @@ class LpConstraint:
 
     @sense.setter
     def sense(self, snse):
-        if snse.lower() not in ('leq', 'eq', 'geq'):
+        try:
+            assert snse.lower() in ('leq', 'eq', 'geq')
+            self._sense = snse.lower()
+        except (AttributeError, AssertionError):
             raise ValueError("Sense must be one of ('leq', 'eq', 'geq')")
-
-        self._sense = snse.lower()
 
     @property
     def slack(self):
@@ -62,7 +63,7 @@ class LpConstraint:
 
     def slack_variable(self):
         return (LpVariable(name=self.name + '_slack_variable',
-                           var_type='Continuous',
+                           var_type=VarType.Continuous,
                            low_bound=0) if self.slack else None)
 
     @property

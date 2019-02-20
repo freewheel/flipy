@@ -10,10 +10,6 @@ def expression(x):
    return LpExpression(name='test_expr', expression={x: 998}, constant=8)
 
 @pytest.fixture
-def y():
-    return LpVariable(name='y') 
-
-@pytest.fixture
 def z():
     return LpVariable(name='z')
 
