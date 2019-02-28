@@ -42,13 +42,13 @@ class LpVariable:
     def set_value(self, value):
         if self.low_bound is not None:
             if self.low_bound > value:
-                raise ValueError('value {v} cannot be below lower bound {b}'.format(v=value, b=self.low_bound))
+                raise ValueError(f'value {value} cannot be below lower bound {self.low_bound}')
         if self.up_bound is not None:
             if self.up_bound < value:
-                raise ValueError('value {v} cannot be above upper bound {b}'.format(v=value, b=self.up_bound))
+                raise ValueError(f'value {value} cannot be above upper bound {self.up_bound}')
         if self.var_type is VarType.Integer:
             if int(value) != value:
-                raise TypeError('value {v} must match var_type {t}'.format(v=value, t=self.var_type))
+                raise TypeError(f'value {value} must match var_type {self.var_type}')
         if self.var_type is VarType.Binary:
             if value not in [0, 1]:
                 raise TypeError('value {v} must match var_type {t}'.format(v=value, t=self.var_type))
