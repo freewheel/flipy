@@ -7,9 +7,13 @@ class LpProblem(object):
 
     def __init__(self, name, lp_objective=None, lp_constraints=None):
         self.name = name
-        self.lp_objective = lp_objective
         self.lp_constraints = dict()
         self.lp_variables = dict()
+
+        if lp_objective:
+            self.set_objective(lp_objective)
+        else:
+            self.lp_objective = None
 
         if lp_constraints:
             for lp_constraint in lp_constraints:
@@ -23,6 +27,8 @@ class LpProblem(object):
         self.lp_variables[lp_variable.name] = lp_variable
 
     def set_objective(self, lp_objective):
+        if not isinstance(lp_objective, Objective):
+            raise Exception('%s is not an Objective' % lp_objective)
         if self.lp_objective:
             raise Exception('LP objective is already set')
         for var in lp_objective.expr.keys():
