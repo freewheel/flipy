@@ -25,8 +25,8 @@ class TestGurobiSolver:
         problem = LpProblem('test', objective, [constraint])
         status = solver.solve(problem)
         assert status == SolutionStatus.Optimal
-        assert x.value == 3
-        assert math.isclose(y.value, 1.0 / 3)
+        assert x._value == 3
+        assert math.isclose(y._value, 1.0 / 3)
         
     def test_solvable_integer(self, solver):
         # 3 <= x <= 5, 0 <= y <= 10 (x, y are integers)
@@ -41,8 +41,8 @@ class TestGurobiSolver:
         problem = LpProblem('test', objective, [constraint])
         status = solver.solve(problem)
         assert status == SolutionStatus.Optimal
-        assert x.value == 5
-        assert y.value == 1
+        assert x._value == 5
+        assert y._value == 1
 
     def test_infeasible(self, solver):
         # 0 <= x <= 1, 0 <= y <= 1 (x, y are binarys)
