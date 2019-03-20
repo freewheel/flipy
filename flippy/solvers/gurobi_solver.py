@@ -27,11 +27,11 @@ STATUS_MAPPING = {
 
 
 class GurobiSolver:
-    def __init__(self, mip_gap: float = 0.1, timeout: Optional[int] = None):
+    def __init__(self, mip_gap: float = 0.1, timeout: Optional[int] = None) -> None:
         self.mip_gap = mip_gap
         self.timeout = timeout
         
-    def solve(self, lp_problem: LpProblem):
+    def solve(self, lp_problem: LpProblem) -> SolutionStatus:
         model = gurobipy.Model(lp_problem.name)
 
         model.setParam('MIPGap', self.mip_gap)
@@ -46,7 +46,7 @@ class GurobiSolver:
         self.retrive_values(lp_problem, model)
         return STATUS_MAPPING[solution_status]
 
-    def add_variables(self, lp_problem: LpProblem, model: gurobipy.Model):
+    def add_variables(self, lp_problem: LpProblem, model: gurobipy.Model) -> None:
         for var_name, var in lp_problem.lp_variables.items():
             low_bound = var.low_bound
             if low_bound is None:
@@ -62,7 +62,7 @@ class GurobiSolver:
             var.solver_var = model.addVar(low_bound, up_bound, vtype=var_type, obj=obj_coef, name=var_name)
         model.update()
 
-    def add_constraints(self, lp_problem: LpProblem, model: gurobipy.Model):
+    def add_constraints(self, lp_problem: LpProblem, model: gurobipy.Model) -> None:
         for name, constraint in lp_problem.lp_constraints.items():
             lhs_expr = gurobipy.LinExpr(
                 [(coef, var.solver_var) for var, coef in constraint.lhs_expression.expr.items()])
@@ -79,12 +79,12 @@ class GurobiSolver:
             constraint.solver_constraint = model.addConstr(lhs_expr, relation, rhs_expr, name)
         model.update()
 
-    def acutal_solve(self, model: gurobipy.Model):
+    def acutal_solve(self, model: gurobipy.Model) -> int:
         model.optimize()
         solution_status = model.Status
         return solution_status
 
-    def retrive_values(self, lp_problem: LpProblem, model: gurobipy.Model):
+    def retrive_values(self, lp_problem: LpProblem, model: gurobipy.Model) -> None:
         try:
             for var, value in zip(lp_problem.lp_variables.values(),
                                   model.getAttr(gurobipy.GRB.Attr.X, model.getVars())):
