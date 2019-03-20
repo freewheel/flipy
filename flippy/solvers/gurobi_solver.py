@@ -40,6 +40,13 @@ class GurobiSolver:
 
         if not isinstance(lp_problem, LpProblem):
             raise Exception('%s is not an LpProblem'%lp_problem)
+        self.add_variables(lp_problem, model)
+        self.add_constraints(lp_problem, model)
+        solution_status = self.acutal_solve(model)
+        self.retrive_values(lp_problem, model)
+        return STATUS_MAPPING[solution_status]
+
+    def add_variables(self, lp_problem, model):
         for var_name, var in lp_problem.lp_variables.items():
             low_bound = var.low_bound
             if low_bound is None:
@@ -52,12 +59,16 @@ class GurobiSolver:
                 var_type = gurobipy.GRB.CONTINUOUS
             else:
                 var_type = gurobipy.GRB.INTEGER
-            var.solver_var = model.addVar(low_bound, up_bound, vtype = var_type, obj = obj_coef, name = var_name)
+            var.solver_var = model.addVar(low_bound, up_bound, vtype=var_type, obj=obj_coef, name=var_name)
         model.update()
+
+    def add_constraints(self, lp_problem, model):
         for name, constraint in lp_problem.lp_constraints.items():
-            lhs_expr = gurobipy.LinExpr([(coef, var.solver_var) for var, coef in constraint.lhs_expression.expr.items()])
+            lhs_expr = gurobipy.LinExpr(
+                [(coef, var.solver_var) for var, coef in constraint.lhs_expression.expr.items()])
             lhs_expr.addConstant(constraint.lhs_expression.const)
-            rhs_expr = gurobipy.LinExpr([(coef, var.solver_var) for var, coef in constraint.rhs_expression.expr.items()])
+            rhs_expr = gurobipy.LinExpr(
+                [(coef, var.solver_var) for var, coef in constraint.rhs_expression.expr.items()])
             rhs_expr.addConstant(constraint.rhs_expression.const)
             if constraint.sense.lower() == 'leq':
                 relation = gurobipy.GRB.LESS_EQUAL
@@ -67,11 +78,16 @@ class GurobiSolver:
                 relation = gurobipy.GRB.EQUAL
             constraint.solver_constraint = model.addConstr(lhs_expr, relation, rhs_expr, name)
         model.update()
+
+    def acutal_solve(self, model):
         model.optimize()
         solution_status = model.Status
+        return solution_status
+
+    def retrive_values(self, lp_problem, model):
         try:
-            for var, value in zip(lp_problem.lp_variables.values(), model.getAttr(gurobipy.GRB.Attr.X, model.getVars())):
+            for var, value in zip(lp_problem.lp_variables.values(),
+                                  model.getAttr(gurobipy.GRB.Attr.X, model.getVars())):
                 var._value = value
         except (gurobipy.GurobiError, AttributeError):
             pass
-        return STATUS_MAPPING[solution_status]
