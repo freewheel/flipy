@@ -27,7 +27,7 @@ STATUS_MAPPING = {
 
 
 class GurobiSolver:
-    def __init__(self, mip_gap: float=0.1, timeout: Optional[int]=None):
+    def __init__(self, mip_gap: float = 0.1, timeout: Optional[int] = None):
         self.mip_gap = mip_gap
         self.timeout = timeout
         
