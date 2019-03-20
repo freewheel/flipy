@@ -81,8 +81,7 @@ class GurobiSolver:
 
     def acutal_solve(self, model: gurobipy.Model) -> int:
         model.optimize()
-        solution_status = model.Status
-        return solution_status
+        return model.Status
 
     def retrive_values(self, lp_problem: LpProblem, model: gurobipy.Model) -> None:
         try:
