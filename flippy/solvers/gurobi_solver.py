@@ -46,7 +46,7 @@ class GurobiSolver:
         self.retrive_values(lp_problem, model)
         return STATUS_MAPPING[solution_status]
 
-    def add_variables(self, lp_problem, model):
+    def add_variables(self, lp_problem: LpProblem, model: gurobipy.Model):
         for var_name, var in lp_problem.lp_variables.items():
             low_bound = var.low_bound
             if low_bound is None:
@@ -62,7 +62,7 @@ class GurobiSolver:
             var.solver_var = model.addVar(low_bound, up_bound, vtype=var_type, obj=obj_coef, name=var_name)
         model.update()
 
-    def add_constraints(self, lp_problem, model):
+    def add_constraints(self, lp_problem: LpProblem, model: gurobipy.Model):
         for name, constraint in lp_problem.lp_constraints.items():
             lhs_expr = gurobipy.LinExpr(
                 [(coef, var.solver_var) for var, coef in constraint.lhs_expression.expr.items()])
@@ -79,12 +79,12 @@ class GurobiSolver:
             constraint.solver_constraint = model.addConstr(lhs_expr, relation, rhs_expr, name)
         model.update()
 
-    def acutal_solve(self, model):
+    def acutal_solve(self, model: gurobipy.Model):
         model.optimize()
         solution_status = model.Status
         return solution_status
 
-    def retrive_values(self, lp_problem, model):
+    def retrive_values(self, lp_problem: LpProblem, model: gurobipy.Model):
         try:
             for var, value in zip(lp_problem.lp_variables.values(),
                                   model.getAttr(gurobipy.GRB.Attr.X, model.getVars())):
