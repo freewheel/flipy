@@ -52,6 +52,18 @@ class LpConstraint:
             raise ValueError("Sense must be one of ('leq', 'eq', 'geq')")
 
     @property
+    def lower_bound(self):
+        if self.sense == 'leq':
+            return None
+        return self.rhs_expression.const - self.lhs_expression.const
+
+    @property
+    def upper_bound(self):
+        if self.sense == 'geq':
+            return None
+        return self.rhs_expression.const - self.lhs_expression.const
+
+    @property
     def slack(self):
         return self._slack
 

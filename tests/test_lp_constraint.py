@@ -84,6 +84,28 @@ class TestLpConstraint:
 
             assert 'sense' in e.message.lower()
 
+    def test_lower_bound(self, lhs_expression, rhs_expression):
+        constraint = LpConstraint(lhs_expression,
+                                  'leq',
+                                  rhs_expression,
+                                  'test_constraint')
+        assert constraint.lower_bound is None
+        assert constraint.upper_bound == -5
+
+        constraint = LpConstraint(lhs_expression,
+                                  'geq',
+                                  rhs_expression,
+                                  'test_constraint')
+        assert constraint.upper_bound is None
+        assert constraint.lower_bound == -5
+
+        constraint = LpConstraint(lhs_expression,
+                                  'eq',
+                                  rhs_expression,
+                                  'test_constraint')
+        assert constraint.upper_bound == -5
+        assert constraint.lower_bound == -5
+
     def test_invalid_slack(self, lhs_expression):
         with pytest.raises(ValueError) as e:
             LpConstraint(lhs_expression, 'leq', slack='invalid')
