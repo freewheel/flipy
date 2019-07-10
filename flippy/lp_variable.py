@@ -78,3 +78,30 @@ class LpVariable:
             if bound < self.low_bound:
                 raise ValueError('upper bound {u} cannot be below lower bound {low}'.format(u=bound, low=self.low_bound))
         self._up_bound = bound
+
+    def is_positive(self):
+        return self.low_bound == 0 and self.up_bound is None
+
+    def is_free(self):
+        return self.low_bound is None and self.up_bound is None
+
+    def is_constant(self):
+        return self.low_bound is not None and self.up_bound == self.low_bound
+
+    def asCplexLpVariable(self):
+        if self.is_free():
+            return self.name + " free"
+        if self.is_constant():
+            return self.name + " = %.12g" % self.low_bound
+        if self.low_bound is None:
+            s= "-inf <= "
+        # Note: XPRESS and CPLEX do not interpret integer variables without
+        # explicit bounds
+        elif self.low_bound == 0 and self.var_type == VarType.Continuous:
+            s = ""
+        else:
+            s = "%.12g <= " % self.low_bound
+        s += self.name
+        if self.up_bound is not None:
+            s += " <= %.12g" % self.up_bound
+        return s

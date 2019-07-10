@@ -43,3 +43,6 @@ class TestLpVariable(object):
         with pytest.raises(ValueError) as e:
             x.set_value(12)
         assert 'cannot be' in str(e.value)
+
+    def test_write(self, x):
+        assert x.asCplexLpVariable() == 'x <= 10'

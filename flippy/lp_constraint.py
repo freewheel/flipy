@@ -3,6 +3,7 @@ import warnings
 
 from flippy.lp_expression import LpExpression
 from flippy.lp_variable import LpVariable, VarType
+from flippy.utils import LpCplexLPLineSize, _count_characters
 
 
 class LpConstraint:
@@ -84,3 +85,56 @@ class LpConstraint:
                 'eq': operator.eq,
                 'geq': operator.ge}[self.sense](self.lhs_expression.evaluate(),
                                                 self.rhs_expression.evaluate())
+
+    def asCplexLpConstraint(self, name):
+        """
+        Returns a constraint as a string
+        """
+        lhs_result, line = self.lhs_expression.asCplexVariablesOnly(name)
+        if self.lhs_expression.const:
+            if self.lhs_expression.const < 0:
+                term = " - %s" % (-self.lhs_expression.const)
+            elif self.lhs_expression.const > 0:
+                term = " + %s" % self.lhs_expression.const
+            line += [term]
+
+        if not list(self.lhs_expression.expr.keys()):
+            line += ["0"]
+        if self.sense.lower() == 'leq':
+            sense = '<='
+        elif self.sense.lower() == 'geq':
+            sense = '>='
+        else:
+            sense = '='
+
+        rhs_result, rhs_line = self.rhs_expression.asCplexVariablesOnly(name)
+
+        # Could probably do some better checks on line length when trying to do combining
+        if not list(self.rhs_expression.expr.keys()) and not self.rhs_expression.const:
+            rhs_line += ["0"]
+
+        # Note this does not check the length
+        # If variables exist
+        if list(self.rhs_expression.expr.keys()):
+            if self.rhs_expression.const < 0:
+                term = " - %s" % (-self.rhs_expression.const)
+            elif self.rhs_expression.const > 0:
+                term = " + %s" % self.rhs_expression.const
+            rhs_line += [term]
+        else:
+            term = str(self.rhs_expression.const)
+            rhs_line += [term]
+
+        term = " %s %s" % (sense, rhs_result[0][1:] if rhs_result else "".join(rhs_line[1:]) if rhs_line else '')
+        if _count_characters(line)+len(term) > LpCplexLPLineSize:
+            lhs_result += ["".join(line)]
+            line = [term]
+        else:
+            line += [term]
+        lhs_result += ["".join(line)]
+
+        if rhs_result:
+            lhs_result += ["".join(rhs_line)]
+
+        result = "%s\n" % "\n".join(lhs_result)
+        return result

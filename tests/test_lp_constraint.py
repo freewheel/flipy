@@ -116,3 +116,7 @@ class TestLpConstraint:
         lp_constraint = LpConstraint(lhs_expression, 'leq', rhs_expression)
 
         assert not lp_constraint.check()
+
+    def test_write(self, lhs_expression, rhs_expression):
+        lp_constraint = LpConstraint(lhs_expression, 'geq', rhs_expression)
+        assert lp_constraint.asCplexLpConstraint('constraint') == 'constraint: x + 3 y + 7 >=  x + 5 y + 2\n'

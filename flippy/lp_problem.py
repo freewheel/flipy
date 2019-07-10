@@ -1,6 +1,6 @@
-from flippy.lp_variable import LpVariable
+from flippy.lp_variable import LpVariable, VarType
 from flippy.lp_constraint import LpConstraint
-from flippy.objective import Objective
+from flippy.objective import Objective, Minimize
 
 
 class LpProblem(object):
@@ -51,6 +51,69 @@ class LpProblem(object):
     def read_lp(self):
         pass
 
-    def write_lp(self):
-        pass
+    def writeLP(self, buffer, mip = 1):
+        """
+        Write the given Lp problem to a .lp file.
 
+        This function writes the specifications (objective function,
+        constraints, variables) of the defined Lp problem to a file.
+
+        :param buffer:  string buffer
+
+        Side Effects:
+            - The file is created.
+        """
+        if not self.lp_objective:
+            raise Exception('No objective')
+
+        buffer.write("\\* "+self.name+" *\\\n")
+        if self.lp_objective.sense == Minimize:
+            buffer.write("Minimize\n")
+        else:
+            buffer.write("Maximize\n")
+
+        objName = self.lp_objective.name
+
+        if not objName: objName = "OBJ"
+        buffer.write(self.lp_objective.asCplexLpAffineExpression(objName, constant = 0))
+        buffer.write("Subject To\n")
+        ks = list(self.lp_constraints.keys())
+        ks.sort()
+        for k in ks:
+            constraint = self.lp_constraints[k]
+            buffer.write(constraint.asCplexLpConstraint(k))
+
+        vs = self.lp_variables
+        # check if any names are longer than 100 characters
+        long_names = [v for v in vs if len(v) > 100]
+        if long_names:
+            raise Exception('Variable names too long for Lp format\n' + str(long_names))
+
+        # Bounds on non-"positive" variables
+        # Note: XPRESS and CPLEX do not interpret integer variables without
+        # explicit bounds
+        if mip:
+            vg = [self.lp_variables[v] for v in vs if not self.lp_variables[v].is_positive() and
+                  self.lp_variables[v].var_type is VarType.Continuous]
+        else:
+            vg = [self.lp_variables[v] for v in vs if not self.lp_variables[v].is_positive()]
+        if vg:
+            buffer.write("Bounds\n")
+            for v in vg:
+                buffer.write("%s\n" % v.asCplexLpVariable())
+        if mip:
+            # Integer non-binary variables
+            vg = [self.lp_variables[v] for v in vs if self.lp_variables[v].var_type is VarType.Integer]
+            if vg:
+                buffer.write("Generals\n")
+                for v in vg: buffer.write("%s\n" % v.name)
+            # Binary variables
+            vg = [self.lp_variables[v] for v in vs if self.lp_variables[v].var_type is VarType.Binary]
+            if vg:
+                buffer.write("Binaries\n")
+                for v in vg:
+                    buffer.write("%s\n" % v.name)
+
+        buffer.write("End\n")
+
+        return buffer
