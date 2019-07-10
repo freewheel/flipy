@@ -10,10 +10,9 @@ class LpProblem(object):
         self.lp_constraints = dict()
         self.lp_variables = dict()
 
+        self.lp_objective = None
         if lp_objective:
             self.set_objective(lp_objective)
-        else:
-            self.lp_objective = None
 
         if lp_constraints:
             for lp_constraint in lp_constraints:
