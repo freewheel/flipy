@@ -11,10 +11,10 @@ class Maximize:
     pass
 
 
-class Objective(LpExpression):
+class LpObjective(LpExpression):
     def __init__(self, name: str='', expression: Optional[Mapping[LpVariable, Numeric]] = None, constant: Numeric=0,
                  sense=Minimize):
-        super(Objective, self).__init__(name, expression, constant)
+        super(LpObjective, self).__init__(name, expression, constant)
         self._sense = None
 
         self.sense = sense

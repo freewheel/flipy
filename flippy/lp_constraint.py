@@ -17,6 +17,8 @@ class LpConstraint:
         self.slack = slack
         self.slack_penalty = slack_penalty
 
+        self._slack_variable = None
+
     @property
     def lhs_expression(self):
         return self._lhs_expression
@@ -74,10 +76,12 @@ class LpConstraint:
 
         self._slack = slck
 
+    @property
     def slack_variable(self):
-        return (LpVariable(name=self.name + '_slack_variable',
-                           var_type=VarType.Continuous,
-                           low_bound=0) if self.slack else None)
+        self._slack_variable = (self._slack_variable or LpVariable(name=self.name + '_slack_variable',
+                                                                  var_type=VarType.Continuous,
+                                                                  low_bound=0)) if self.slack else None
+        return self._slack_variable
 
     @property
     def slack_penalty(self):

@@ -72,7 +72,7 @@ class GurobiSolver:
             rhs_expr.addConstant(constraint.rhs_expression.const)
             if constraint.sense.lower() == 'leq':
                 relation = gurobipy.GRB.LESS_EQUAL
-            elif constraint.sense.lower() == 'ge':
+            elif constraint.sense.lower() == 'geq':
                 relation = gurobipy.GRB.GREATER_EQUAL
             elif constraint.sense.lower() == 'eq':
                 relation = gurobipy.GRB.EQUAL

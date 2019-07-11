@@ -1,6 +1,6 @@
 from flippy.lp_variable import LpVariable, VarType
 from flippy.lp_constraint import LpConstraint
-from flippy.objective import Objective, Minimize
+from flippy.lp_objective import LpObjective, Minimize
 
 
 class LpProblem(object):
@@ -26,8 +26,8 @@ class LpProblem(object):
         self.lp_variables[lp_variable.name] = lp_variable
 
     def set_objective(self, lp_objective):
-        if not isinstance(lp_objective, Objective):
-            raise Exception('%s is not an Objective' % lp_objective)
+        if not isinstance(lp_objective, LpObjective):
+            raise Exception('%s is not an LpObjective' % lp_objective)
         if self.lp_objective:
             raise Exception('LP objective is already set')
         for var in lp_objective.expr.keys():

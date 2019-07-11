@@ -54,6 +54,10 @@ class LpVariable:
                 raise TypeError('value {v} must match var_type {t}'.format(v=value, t=self.var_type))
         self._value = value
 
+    @property
+    def value(self):
+        return self._value
+
     def __hash__(self):
         return id(self)
 
