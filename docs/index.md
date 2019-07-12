@@ -14,13 +14,11 @@ permalink: /
 FreeWheel Linear Programming Interface for Python
 {: .fs-5 .fw-300 }
 
-[Get started now](#getting-started){: .btn .btn-blue .fs-5 .mb-4 .mb-md-0 .mr-2 } [View it on GitHub](https://github.freewheel.tv/linear/flippy/){: .btn .fs-5 .mb-4 .mb-md-0 }
+[Get started now]({{site.baseurl}}/docs/quickstart){: .btn .btn-blue .fs-5 .mb-4 .mb-md-0 .mr-2 } [View it on GitHub](https://github.freewheel.tv/linear/flippy/){: .btn .fs-5 .mb-4 .mb-md-0 }
 
 ---
 
-## Getting started
-
-### Dependencies
+## Dependencies
 
 Flippy is an integer and linear programming interface. It currently supports [Gurobi](https://www.gurobi.com/) and [CBC](https://github.com/coin-or/Cbc) as the backend solver.
 

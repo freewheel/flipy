@@ -16,8 +16,8 @@
 title: Flippy
 description: FreeWheel Linear Programming Interface for Python
 
-baseurl: "" # the subpath of your site, e.g. /blog
-url: "https://github.freewheel.tv/pages/linear/flippy/" # the base hostname & protocol for your site, e.g. http://example.com
+baseurl: "/pages/linear/flippy" # the subpath of your site, e.g. /blog
+url: "https://github.freewheel.tv" # the base hostname & protocol for your site, e.g. http://example.com
 
 permalink: pretty
 exclude: ["node_modules/", "*.gemspec", "*.gem", "Gemfile", "Gemfile.lock", "package.json", "package-lock.json",  "script/", "LICENSE.txt", "lib/", "bin/", "README.md", "Rakefile"]

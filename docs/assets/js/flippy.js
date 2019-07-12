@@ -48,11 +48,11 @@ function initSearch() {
   {
     s = sc.item(idx);
 
-    if(s.src && s.src.match(/just-the-docs\.js$/))
+    if(s.src && s.src.match(/flippy\.js$/))
     { source = s.src; }
   }
 
-  jsPath = source.replace('just-the-docs.js', '');
+  jsPath = source.replace('flippy.js', '');
 
   jsonPath = jsPath + 'search-data.json';
 
