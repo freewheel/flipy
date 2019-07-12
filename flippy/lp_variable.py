@@ -11,14 +11,14 @@ class LpVariable:
     def __init__(self, name, var_type=VarType.Continuous, up_bound=None, low_bound=None):
         self._name = name
 
-        self._var_type = None
-        self._up_bound = None
-        self._low_bound = None
+        self._var_type = var_type
+        if self._var_type == VarType.Binary:
+            self._up_bound = 1
+            self._low_bound = 0
+        else:
+            self._up_bound = up_bound
+            self._low_bound = low_bound
         self._value = None
-
-        self.var_type = var_type
-        self.up_bound = up_bound
-        self.low_bound = low_bound
 
     @property
     def name(self):

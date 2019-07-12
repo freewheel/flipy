@@ -2,6 +2,7 @@ from typing import Optional
 import gurobipy
 from flippy.lp_problem import LpProblem
 from flippy.lp_variable import VarType
+from flippy.lp_objective import Maximize
 from enum import Enum
 
 
@@ -38,6 +39,9 @@ class GurobiSolver:
         if self.timeout is not None:
             model.setParam('TimeLimit', self.timeout)
 
+        if lp_problem.lp_objective and lp_problem.lp_objective.sense == Maximize:
+            model.setAttr("ModelSense", -1)
+            
         if not isinstance(lp_problem, LpProblem):
             raise Exception('%s is not an LpProblem'%lp_problem)
         self.add_variables(lp_problem, model)
@@ -54,7 +58,7 @@ class GurobiSolver:
             up_bound = var.up_bound
             if up_bound is None:
                 up_bound = gurobipy.GRB.INFINITY
-            obj_coef = lp_problem.lp_objective.expr.get(var)
+            obj_coef = lp_problem.lp_objective.expr.get(var, 0)
             if var.var_type == VarType.Continuous:
                 var_type = gurobipy.GRB.CONTINUOUS
             else:
