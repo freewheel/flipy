@@ -99,8 +99,8 @@ class LpConstraint:
     @property
     def slack_variable(self):
         self._slack_variable = (self._slack_variable or LpVariable(name=self.name + '_slack_variable',
-                                                                  var_type=VarType.Continuous,
-                                                                  low_bound=0)) if self.slack else None
+                                                                   var_type=VarType.Continuous,
+                                                                   low_bound=0)) if self.slack else None
         return self._slack_variable
 
     @property

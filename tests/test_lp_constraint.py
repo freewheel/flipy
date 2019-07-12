@@ -113,9 +113,9 @@ class TestLpConstraint:
             assert 'slack' in e.message.lower()
 
     def test_slack_variable(self, lp_constraint, lp_constraint_with_slack):
-        assert lp_constraint.slack_variable() is None
+        assert lp_constraint.slack_variable is None
 
-        slack_var = lp_constraint_with_slack.slack_variable()
+        slack_var = lp_constraint_with_slack.slack_variable
 
         assert isinstance(slack_var, LpVariable)
         assert slack_var.name.endswith('slack_variable')

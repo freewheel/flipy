@@ -3,14 +3,7 @@ import gurobipy
 from flippy.lp_problem import LpProblem
 from flippy.lp_variable import VarType
 from flippy.lp_objective import Maximize
-from enum import Enum
-
-
-class SolutionStatus(Enum):
-    Optimal = 1
-    Infeasible = 2
-    Unbounded = 3
-    NotSolved = 4
+from flippy.solvers.base_solver import SolutionStatus
 
 
 STATUS_MAPPING = {

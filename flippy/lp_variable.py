@@ -11,6 +11,8 @@ class LpVariable:
     def __init__(self, name, var_type=VarType.Continuous, up_bound=None, low_bound=None):
         self._name = name
 
+        if var_type not in (VarType.Continuous, VarType.Integer, VarType.Binary):
+            raise ValueError(f'var_type must be one of VarType.Continuous, VarType.Integer, VarType.Binary, not {var_type}')
         self._var_type = var_type
         if self._var_type == VarType.Binary:
             self._up_bound = 1
@@ -48,10 +50,10 @@ class LpVariable:
                 raise ValueError(f'value {value} cannot be above upper bound {self.up_bound}')
         if self.var_type is VarType.Integer:
             if int(value) != value:
-                raise TypeError(f'value {value} must match var_type {self.var_type}')
+                raise ValueError(f'value {value} must match var_type {self.var_type}')
         if self.var_type is VarType.Binary:
             if value not in [0, 1]:
-                raise TypeError('value {v} must match var_type {t}'.format(v=value, t=self.var_type))
+                raise ValueError('value {v} must match var_type {t}'.format(v=value, t=self.var_type))
         self._value = value
 
     @property

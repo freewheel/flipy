@@ -1,7 +1,7 @@
 import pytest
 
 from flippy.lp_problem import LpProblem
-from flippy.objective import Objective
+from flippy.lp_objective import LpObjective
 from flippy.lp_variable import LpVariable
 from flippy.lp_expression import LpExpression
 from flippy.lp_constraint import LpConstraint
@@ -42,7 +42,7 @@ class TestLpProblem(object):
         assert e.value.args == ('LP variable name x conflicts with an existing LP variable',)
 
     def test_set_objective(self, problem, x):
-        objective = Objective(name='minimize_cpm', expression={x: 998}, constant=8)
+        objective = LpObjective(name='minimize_cpm', expression={x: 998}, constant=8)
         problem.set_objective(objective)
         assert problem.lp_objective == objective
 
@@ -69,7 +69,7 @@ class TestLpProblem(object):
         assert e.value.args == ('%s is not an LpConstraint' % 10,)
 
     def test_write(self, problem, x):
-        objective = Objective(name='minimize_cpm', expression={x: 998}, constant=8)
+        objective = LpObjective(name='minimize_cpm', expression={x: 998}, constant=8)
         rhs = LpExpression('rhs', {x: 1})
         lhs = LpExpression('lhs', {}, -2)
         constraint = LpConstraint(rhs, 'geq', lhs, 'constraint')

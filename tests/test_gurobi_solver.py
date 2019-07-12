@@ -3,13 +3,15 @@ from flippy.lp_problem import LpProblem
 from flippy.lp_constraint import LpConstraint
 from flippy.lp_expression import LpExpression
 from flippy.lp_variable import LpVariable, VarType
-from flippy.objective import Objective
+from flippy.lp_objective import LpObjective
 from flippy.solvers.gurobi_solver import GurobiSolver, SolutionStatus
 import math
+
 
 @pytest.fixture
 def solver():
     return GurobiSolver()
+
 
 class TestGurobiSolver:
     def test_solvable_continuous(self, solver):
@@ -21,7 +23,7 @@ class TestGurobiSolver:
         lhs = LpExpression('lhs', {x: 1}, constant=2)
         rhs = LpExpression('rhs', {y: 3}, constant=4)
         constraint = LpConstraint(lhs, 'eq', rhs)
-        objective = Objective('test_obj', {x: 1, y: 1})
+        objective = LpObjective('test_obj', {x: 1, y: 1})
         problem = LpProblem('test', objective, [constraint])
         status = solver.solve(problem)
         assert status == SolutionStatus.Optimal
@@ -37,7 +39,7 @@ class TestGurobiSolver:
         lhs = LpExpression('lhs', {x:1}, constant=2)
         rhs = LpExpression('rhs', {y:3}, constant=4) 
         constraint = LpConstraint(lhs, 'eq', rhs)
-        objective = Objective('test_obj', {x:1, y:1})
+        objective = LpObjective('test_obj', {x:1, y:1})
         problem = LpProblem('test', objective, [constraint])
         status = solver.solve(problem)
         assert status == SolutionStatus.Optimal
@@ -53,7 +55,7 @@ class TestGurobiSolver:
         lhs = LpExpression('lhs', {x:1}, constant=2)
         rhs = LpExpression('rhs', {y:3}, constant=4) 
         constraint = LpConstraint(lhs, 'eq', rhs)
-        objective = Objective('test_obj', {x:1, y:1})
+        objective = LpObjective('test_obj', {x:1, y:1})
         problem = LpProblem('test', objective, [constraint])
         status = solver.solve(problem)
         assert status == SolutionStatus.Infeasible

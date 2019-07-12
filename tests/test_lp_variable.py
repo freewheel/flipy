@@ -21,15 +21,15 @@ class TestLpVariable(object):
     def test_types(self):
         with pytest.raises(ValueError) as e:
             LpVariable('z', var_type='None')
-        assert 'var_type must be one of Continuous, Integer, Binary' in str(e.value)
+        assert 'var_type must be one of VarType.Continuous, VarType.Integer, VarType.Binary, not None' in str(e.value)
         z = LpVariable('z', var_type=VarType.Integer)
-        with pytest.raises(TypeError) as e:
+        with pytest.raises(ValueError) as e:
             z.set_value(3.5)
         assert 'must match var_type' in str(e.value)
         z.set_value(3)
         z = LpVariable('z', var_type=VarType.Binary)
-        with pytest.raises(TypeError) as e:
-            z.set_value(3.5)
+        with pytest.raises(ValueError) as e:
+            z.set_value(0.5)
         assert 'must match var_type' in str(e.value)
         z.set_value(0)
         z.set_value(1)
