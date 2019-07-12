@@ -92,7 +92,7 @@ class LpVariable:
     def is_constant(self):
         return self.low_bound is not None and self.up_bound == self.low_bound
 
-    def asCplexLpVariable(self):
+    def to_cplex_lp_variable(self):
         if self.is_free():
             return self.name + " free"
         if self.is_constant():

@@ -51,7 +51,54 @@ class LpProblem(object):
     def read_lp(self):
         pass
 
-    def writeLP(self, buffer, mip = 1):
+    def to_str(self, mip=True):
+        result = []
+        if not self.lp_objective:
+            raise Exception('No objective')
+        result.append(f'\\* {self.name} *\\')
+        if self.lp_objective.sense == Minimize:
+            result.append('Minimize')
+        else:
+            result.append('Maximize')
+
+        obj_name = self.lp_objective.name if self.lp_objective.name else 'OBJ'
+
+        result.append(self.lp_objective.to_cplex_lp_affine_expr(obj_name, constant=0))
+        result.append('Subject To')
+        constr_keys = sorted(list(self.lp_constraints.keys()))
+        for constr_key in constr_keys:
+            constraint = self.lp_constraints[constr_key]
+            result.append(constraint.to_cplex_lp_constraint(constr_key))
+
+        variables = self.lp_variables
+
+        if mip:
+            vg = [self.lp_variables[v] for v in variables if not self.lp_variables[v].is_positive() and
+                  self.lp_variables[v].var_type is VarType.Continuous]
+        else:
+            vg = [self.lp_variables[v] for v in variables if not self.lp_variables[v].is_positive()]
+        if vg:
+            result.append('Bounds')
+            for v in vg:
+                result.append(f'{v.to_cplex_lp_variable()}')
+        if mip:
+            # Integer non-binary variables
+            vg = [self.lp_variables[v] for v in variables if self.lp_variables[v].var_type is VarType.Integer]
+            if vg:
+                result.append('Generals')
+                for v in vg:
+                    result.append(v.name)
+            # Binary variables
+            vg = [self.lp_variables[v] for v in variables if self.lp_variables[v].var_type is VarType.Binary]
+            if vg:
+                result.append('Binaries')
+                for v in vg:
+                    result.append(v.name)
+
+        result.append("End")
+        return '\n'.join(result)
+
+    def write_lp(self, buffer, mip=1):
         """
         Write the given Lp problem to a .lp file.
 
@@ -66,7 +113,7 @@ class LpProblem(object):
         if not self.lp_objective:
             raise Exception('No objective')
 
-        buffer.write("\\* "+self.name+" *\\\n")
+        buffer.write(f"\\* {self.name} *\\\n")
         if self.lp_objective.sense == Minimize:
             buffer.write("Minimize\n")
         else:
@@ -75,13 +122,13 @@ class LpProblem(object):
         objName = self.lp_objective.name
 
         if not objName: objName = "OBJ"
-        buffer.write(self.lp_objective.asCplexLpAffineExpression(objName, constant = 0))
+        buffer.write(self.lp_objective.to_cplex_lp_affine_expr(objName, constant=0))
         buffer.write("Subject To\n")
         ks = list(self.lp_constraints.keys())
         ks.sort()
         for k in ks:
             constraint = self.lp_constraints[k]
-            buffer.write(constraint.asCplexLpConstraint(k))
+            buffer.write(constraint.to_cplex_lp_constraint(k))
 
         vs = self.lp_variables
         # check if any names are longer than 100 characters
@@ -100,19 +147,19 @@ class LpProblem(object):
         if vg:
             buffer.write("Bounds\n")
             for v in vg:
-                buffer.write("%s\n" % v.asCplexLpVariable())
+                buffer.write(f"{v.to_cplex_lp_variable()}\n")
         if mip:
             # Integer non-binary variables
             vg = [self.lp_variables[v] for v in vs if self.lp_variables[v].var_type is VarType.Integer]
             if vg:
                 buffer.write("Generals\n")
-                for v in vg: buffer.write("%s\n" % v.name)
+                for v in vg: buffer.write(f"{v.name}\n")
             # Binary variables
             vg = [self.lp_variables[v] for v in vs if self.lp_variables[v].var_type is VarType.Binary]
             if vg:
                 buffer.write("Binaries\n")
                 for v in vg:
-                    buffer.write("%s\n" % v.name)
+                    buffer.write(f"{v.name}\n")
 
         buffer.write("End\n")
 

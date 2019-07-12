@@ -41,35 +41,28 @@ class LpExpression(object):
         """
         returns the list of keys sorted by name
         """
-        result = [(v.name, v) for v in self.expr.keys()]
-        result.sort()
-        result = [v for _, v in result]
-        return result
+        return sorted((v for v in self.expr.keys()), key=lambda v: v.name)
 
-    def asCplexVariablesOnly(self, name):
-        """
-        helper for asCplexLpAffineExpression
-        """
+    def to_cplex_variables_only(self, name, is_first=True, take_inverse=False):
         result = []
-        line = ["%s:" % name]
-        notFirst = 0
+        line = [f"{name}:"]
         variables = self.sorted_keys()
         for v in variables:
             val = self.expr[v]
             if val < 0:
-                sign = " -"
+                sign = ' -' if not take_inverse else ' +'
                 val = -val
-            elif notFirst:
-                sign = " +"
+            elif is_first:
+                sign = ''
             else:
-                sign = ""
-            notFirst = 1
+                sign = ' +' if not take_inverse else ' -'
+            is_first = False
             if val == 1:
-                term = "%s %s" %(sign, v.name)
+                term = f'{sign} {v.name}'
             elif val == 0:
                 continue
             else:
-                term = "%s %.12g %s" % (sign, val, v.name)
+                term = f'{sign} {val:.12g} {v.name}'
 
             if _count_characters(line) + len(term) > LpCplexLPLineSize:
                 result += ["".join(line)]
@@ -78,27 +71,27 @@ class LpExpression(object):
                 line += [term]
         return result, line
 
-    def asCplexLpAffineExpression(self, name, constant = 1):
+    def to_cplex_lp_affine_expr(self, name, constant = 1):
         """
         returns a string that represents the Affine Expression in lp format
         """
         #refactored to use a list for speed in iron python
-        result, line = self.asCplexVariablesOnly(name)
+        result, line = self.to_cplex_variables_only(name)
         if not self.expr or all(self.expr[x] == 0 for x in self.expr):
-            term = " %s" % self.const
+            term = f" {self.const}"
         else:
             term = ""
             if constant:
                 if self.const < 0:
-                    term = " - %s" % (-self.const)
+                    term = f" - {-self.const}"
                 elif self.const > 0:
-                    term = " + %s" % self.const
+                    term = f" + {self.const}"
         if _count_characters(line) + len(term) > LpCplexLPLineSize:
             result += ["".join(line)]
             line = [term]
         else:
             line += [term]
         result += ["".join(line)]
-        result = "%s\n" % "\n".join(result)
-        return result
+        result = "\n".join(result)
+        return f'{result}\n'
 

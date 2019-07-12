@@ -54,4 +54,4 @@ class TestLpExpression(object):
         assert expression == LpExpression(name='text_expr_3', expression={x: 998, y: 0}, constant=8.0)
 
     def test_write(self, expression):
-        assert expression.asCplexLpAffineExpression('expr') == 'expr: 998 x + 8\n'
+        assert expression.to_cplex_lp_affine_expr('expr') == 'expr: 998 x + 8\n'

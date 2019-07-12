@@ -18,10 +18,10 @@ class TestGurobiSolver:
         # minimize: x + y => x = 3, y = 1/3
         x = LpVariable('x', up_bound=5, low_bound=3)
         y = LpVariable('y', up_bound=10, low_bound=0)
-        lhs = LpExpression('lhs', {x:1}, constant=2)
-        rhs = LpExpression('rhs', {y:3}, constant=4) 
+        lhs = LpExpression('lhs', {x: 1}, constant=2)
+        rhs = LpExpression('rhs', {y: 3}, constant=4)
         constraint = LpConstraint(lhs, 'eq', rhs)
-        objective = Objective('test_obj', {x:1, y:1})
+        objective = Objective('test_obj', {x: 1, y: 1})
         problem = LpProblem('test', objective, [constraint])
         status = solver.solve(problem)
         assert status == SolutionStatus.Optimal

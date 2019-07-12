@@ -6,7 +6,6 @@ from flippy.lp_variable import LpVariable
 from flippy.lp_expression import LpExpression
 from flippy.lp_constraint import LpConstraint
 
-import pulp
 from io import StringIO
 
 
@@ -77,20 +76,6 @@ class TestLpProblem(object):
         problem.add_constraint(constraint)
         problem.set_objective(objective)
         buffer = StringIO()
-        problem.writeLP(buffer)
+        problem.write_lp(buffer)
         flippy_string = buffer.getvalue()
         assert flippy_string == '\\* test_problem *\\\nMinimize\nminimize_cpm: 998 x\nSubject To\nconstraint: x >= -2\nBounds\nx <= 10\nEnd\n'
-
-        problem2 = pulp.LpProblem(sense=pulp.LpMinimize, name='test_problem')
-        x2 = pulp.LpVariable('x', lowBound=0, upBound=10)
-        constr = x2 >= -2
-        constr.name = 'constraint'
-        problem2 += constr
-        obj = 998 * x2 + 8
-        problem2 += obj
-        problem2.objective.name = 'minimize_cpm'
-        filename2 = 'tests/test_output/test_gurobi.lp'
-        problem2.writeLP(filename2)
-
-        with open(filename2, 'r') as f:
-            assert ''.join(f.readlines()) == flippy_string

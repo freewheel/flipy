@@ -31,7 +31,7 @@ class GurobiSolver:
     def __init__(self, mip_gap: float = 0.1, timeout: Optional[int] = None) -> None:
         self.mip_gap = mip_gap
         self.timeout = timeout
-        
+
     def solve(self, lp_problem: LpProblem) -> SolutionStatus:
         model = gurobipy.Model(lp_problem.name)
 
@@ -41,9 +41,13 @@ class GurobiSolver:
 
         if lp_problem.lp_objective and lp_problem.lp_objective.sense == Maximize:
             model.setAttr("ModelSense", -1)
-            
+
         if not isinstance(lp_problem, LpProblem):
-            raise Exception('%s is not an LpProblem'%lp_problem)
+            raise Exception('%s is not an LpProblem' % lp_problem)
+
+        if lp_problem.lp_objective.sense == Maximize:
+            model.setAttr("ModelSense", -1)
+
         self.add_variables(lp_problem, model)
         self.add_constraints(lp_problem, model)
         solution_status = self.acutal_solve(model)
@@ -78,7 +82,7 @@ class GurobiSolver:
                 relation = gurobipy.GRB.LESS_EQUAL
             elif constraint.sense.lower() == 'geq':
                 relation = gurobipy.GRB.GREATER_EQUAL
-            elif constraint.sense.lower() == 'eq':
+            else:
                 relation = gurobipy.GRB.EQUAL
             constraint.solver_constraint = model.addConstr(lhs_expr, relation, rhs_expr, name)
         model.update()

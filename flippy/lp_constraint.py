@@ -1,3 +1,4 @@
+import copy
 import operator
 import warnings
 
@@ -9,15 +10,34 @@ from flippy.utils import LpCplexLPLineSize, _count_characters
 class LpConstraint:
 
     def __init__(self, lhs_expression, sense, rhs_expression=None,
-                 name=None, slack=False, slack_penalty=0):
-        self.lhs_expression = lhs_expression
-        self.rhs_expression = rhs_expression or LpExpression()
+                 name=None, slack=False, slack_penalty=0, copy_expr=False):
+        self.lhs_expression = lhs_expression if not copy_expr else copy.copy(lhs_expression)
+        if rhs_expression:
+            self.rhs_expression = rhs_expression if not copy_expr else copy.copy(rhs_expression)
+        else:
+            self.rhs_expression = LpExpression()
         self.sense = sense
         self.name = name or ''
         self.slack = slack
         self.slack_penalty = slack_penalty
 
         self._slack_variable = None
+
+        self._shift_variables_left()
+        self._shift_constant_right()
+
+    def _shift_variables_left(self):
+        if not self.rhs_expression.expr:
+            return
+        for var, coeff in self.rhs_expression.expr.items():
+            self.lhs_expression.expr[var] -= coeff
+        self.rhs_expression.expr.clear()
+
+    def _shift_constant_right(self):
+        if not self.lhs_expression.const:
+            return
+        self.rhs_expression.const -= self.lhs_expression.const
+        self.lhs_expression.const = 0
 
     @property
     def lhs_expression(self):
@@ -102,17 +122,18 @@ class LpConstraint:
                 'geq': operator.ge}[self.sense](self.lhs_expression.evaluate(),
                                                 self.rhs_expression.evaluate())
 
-    def asCplexLpConstraint(self, name):
+    def to_cplex_lp_constraint(self, name):
         """
         Returns a constraint as a string
         """
-        lhs_result, line = self.lhs_expression.asCplexVariablesOnly(name)
+        lhs_result, line = self.lhs_expression.to_cplex_variables_only(name)
         if self.lhs_expression.const:
             if self.lhs_expression.const < 0:
-                term = " - %s" % (-self.lhs_expression.const)
+                term = f" - {-self.lhs_expression.const}"
+                line += [term]
             elif self.lhs_expression.const > 0:
-                term = " + %s" % self.lhs_expression.const
-            line += [term]
+                term = f" + {self.lhs_expression.const}"
+                line += [term]
 
         if not list(self.lhs_expression.expr.keys()):
             line += ["0"]
@@ -123,7 +144,7 @@ class LpConstraint:
         else:
             sense = '='
 
-        rhs_result, rhs_line = self.rhs_expression.asCplexVariablesOnly(name)
+        rhs_result, rhs_line = self.rhs_expression.to_cplex_variables_only(name)
 
         # Could probably do some better checks on line length when trying to do combining
         if not list(self.rhs_expression.expr.keys()) and not self.rhs_expression.const:
@@ -133,16 +154,16 @@ class LpConstraint:
         # If variables exist
         if list(self.rhs_expression.expr.keys()):
             if self.rhs_expression.const < 0:
-                term = " - %s" % (-self.rhs_expression.const)
+                term = f" - {-self.rhs_expression.const}"
             elif self.rhs_expression.const > 0:
-                term = " + %s" % self.rhs_expression.const
+                term = f" + {self.rhs_expression.const}"
             rhs_line += [term]
         else:
             term = str(self.rhs_expression.const)
             rhs_line += [term]
 
-        term = " %s %s" % (sense, rhs_result[0][1:] if rhs_result else "".join(rhs_line[1:]) if rhs_line else '')
-        if _count_characters(line)+len(term) > LpCplexLPLineSize:
+        term = f" {sense} {rhs_result[0][1:] if rhs_result else ''.join(rhs_line[1:]) if rhs_line else ''}"
+        if _count_characters(line) + len(term) > LpCplexLPLineSize:
             lhs_result += ["".join(line)]
             line = [term]
         else:
@@ -152,5 +173,5 @@ class LpConstraint:
         if rhs_result:
             lhs_result += ["".join(rhs_line)]
 
-        result = "%s\n" % "\n".join(lhs_result)
-        return result
+        result = '\n'.join(lhs_result)
+        return f"{result}\n"
