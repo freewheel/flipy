@@ -15,8 +15,8 @@ class LpVariable:
             raise ValueError(f'var_type must be one of VarType.Continuous, VarType.Integer, VarType.Binary, not {var_type}')
         self._var_type = var_type
         if self._var_type == VarType.Binary:
-            self._up_bound = 1
-            self._low_bound = 0
+            self._up_bound = min(up_bound or 1, 1)
+            self._low_bound = max(low_bound or 0, 0)
         else:
             self._up_bound = up_bound
             self._low_bound = low_bound
