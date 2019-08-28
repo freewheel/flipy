@@ -119,14 +119,19 @@ class LpConstraint:
     def check(self):
         return {'leq': operator.le,
                 'eq': operator.eq,
-                'geq': operator.ge}[self.sense](self.lhs_expression.evaluate(),
+                'geq': operator.ge}[self.sense](self.lhs_expression.evaluate() +
+                                                (0 if not self.slack else self.slack_variable.evaluate() *
+                                                 (-1 if self.sense == 'leq' else 1)),
                                                 self.rhs_expression.evaluate())
 
     def to_cplex_lp_constraint(self, name):
         """
         Returns a constraint as a string
         """
-        lhs_result, line = self.lhs_expression.to_cplex_variables_only(name)
+        # Add on the slack only when writing the constraint out
+        lhs_result, line = self.lhs_expression.to_cplex_variables_only(name,
+                                                                       slack={self.slack_variable: -1 if self.sense == 'leq' else 1}
+                                                                       if self.slack else None)
         if self.lhs_expression.const:
             if self.lhs_expression.const < 0:
                 term = f" - {-self.lhs_expression.const}"

@@ -43,12 +43,21 @@ class LpExpression(object):
         """
         return sorted((v for v in self.expr.keys()), key=lambda v: v.name)
 
-    def to_cplex_variables_only(self, name, is_first=True, take_inverse=False):
+    def to_cplex_variables_only(self, name, is_first=True, take_inverse=False, slack=None):
+        """
+
+        Parameters
+        ----------
+        slack: dict(LpVariable -> float): all slack variables being used and their coefficients
+        """
         result = []
         line = [f"{name}:"]
         variables = self.sorted_keys()
+        slack = slack or {}
+        variables += list(slack.keys())
         for v in variables:
-            val = self.expr[v]
+            # When adding slack the coefficient should be -1 for leq and +1 for geq to make constraint easier to satisfy
+            val = slack[v] if v in slack else self.expr[v]
             if val < 0:
                 sign = ' -' if not take_inverse else ' +'
                 val = -val
@@ -71,12 +80,12 @@ class LpExpression(object):
                 line += [term]
         return result, line
 
-    def to_cplex_lp_affine_expr(self, name, constant = 1):
+    def to_cplex_lp_affine_expr(self, name, constant=1, slack=None):
         """
         returns a string that represents the Affine Expression in lp format
         """
         #refactored to use a list for speed in iron python
-        result, line = self.to_cplex_variables_only(name)
+        result, line = self.to_cplex_variables_only(name, slack=slack)
         if not self.expr or all(self.expr[x] == 0 for x in self.expr):
             term = f" {self.const}"
         else:

@@ -139,6 +139,14 @@ class TestLpConstraint:
 
         assert not lp_constraint.check()
 
+        lp_constraint.slack = True
+        lp_constraint.slack_variable.set_value(100)
+
+        assert lp_constraint.check()
+
+        lp_constraint.slack = False
+        assert not lp_constraint.check()
+
     def test_write(self, lhs_expression, rhs_expression):
         lp_constraint = LpConstraint(lhs_expression, 'geq', rhs_expression)
         assert lp_constraint.to_cplex_lp_constraint('constraint') == 'constraint: - 2 y >= -5\n'

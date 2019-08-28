@@ -11,8 +11,10 @@ class LpProblem(object):
         self.name = name
         self.lp_constraints = dict()
         self.lp_variables = dict()
+        self.slack = dict()
 
         self.lp_objective = None
+
         if lp_objective:
             self.set_objective(lp_objective)
 
@@ -121,7 +123,10 @@ class LpProblem(object):
         objName = self.lp_objective.name
 
         if not objName: objName = "OBJ"
-        buffer.write(self.lp_objective.to_cplex_lp_affine_expr(objName, constant=0))
+        slack = {constraint.slack_variable: constraint.slack_penalty * (1 if self.lp_objective.sense == Minimize
+                 else -1) for constraint in self.lp_constraints.values() if constraint.slack}
+        buffer.write(self.lp_objective.to_cplex_lp_affine_expr(objName, constant=0,
+                                                               slack=slack or None))
         buffer.write("Subject To\n")
         ks = list(self.lp_constraints.keys())
         ks.sort()
