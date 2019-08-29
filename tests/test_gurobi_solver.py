@@ -73,3 +73,5 @@ class TestGurobiSolver:
         problem = LpProblem('test', objective, [constraint])
         status = solver.solve(problem)
         assert status == SolutionStatus.Optimal
+        assert x.value == 1
+        assert y.value == 1
