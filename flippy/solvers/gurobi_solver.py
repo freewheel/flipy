@@ -94,8 +94,12 @@ class GurobiSolver:
 
     def retrive_values(self, lp_problem: LpProblem, model: gurobipy.Model) -> None:
         try:
-            for var, value in zip(lp_problem.lp_variables.values(),
-                                  model.getAttr(gurobipy.GRB.Attr.X, model.getVars())):
-                var._value = value
+            for var in lp_problem.lp_variables.values():
+                gurobi_var = model.getVarByName(var.name)
+                var._value = gurobi_var.X
+            for constraint in lp_problem.lp_constraints.values():
+                if constraint.slack:
+                    gurobi_var = model.getVarByName(constraint.slack_variable.name)
+                    constraint.slack_variable._value = gurobi_var.X
         except (gurobipy.GurobiError, AttributeError):
             pass

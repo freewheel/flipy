@@ -69,4 +69,7 @@ class CoinSolver:
 
         for var in lp_problem.lp_variables.values():
             var._value = values[var.name]
+        for constraint in lp_problem.lp_constraints.values():
+            if constraint.slack:
+                constraint.slack_variable._value = values[constraint.slack_variable.name]
         return status

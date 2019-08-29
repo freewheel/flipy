@@ -72,6 +72,8 @@ class TestGurobiSolver:
         objective = LpObjective('test_obj', {x: 1, y: 1})
         problem = LpProblem('test', objective, [constraint])
         status = solver.solve(problem)
+
         assert status == SolutionStatus.Optimal
         assert x.value == 1
         assert y.value == 1
+        assert constraint.slack_variable.value == 1
