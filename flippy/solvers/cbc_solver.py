@@ -52,6 +52,9 @@ class CoinSolver:
         values = {}
         for var in lp_problem.lp_variables.values():
             values[var.name] = 0
+        for constraint in lp_problem.lp_constraints.values():
+            if constraint.slack:
+                values[constraint.slack_variable.name] = 0
 
         with open(filename) as f:
             status_str = f.readline().split()[0]
