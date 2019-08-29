@@ -59,3 +59,17 @@ class TestGurobiSolver:
         problem = LpProblem('test', objective, [constraint])
         status = solver.solve(problem)
         assert status == SolutionStatus.Infeasible
+
+    def test_slack(self, solver):
+        # 0 <= x <= 1, 0 <= y <= 1 (x, y are binarys)
+        # x + y >= 3
+        # minimize: x + y => Infeasible
+        x = LpVariable('x', var_type=VarType.Binary)
+        y = LpVariable('y', var_type=VarType.Binary)
+        lhs = LpExpression('lhs', {x: 1, y: 1})
+        rhs = LpExpression('rhs', {}, constant=3)
+        constraint = LpConstraint(lhs, 'geq', rhs, slack=True, slack_penalty=1000)
+        objective = LpObjective('test_obj', {x: 1, y: 1})
+        problem = LpProblem('test', objective, [constraint])
+        status = solver.solve(problem)
+        assert status == SolutionStatus.Optimal

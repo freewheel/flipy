@@ -70,8 +70,10 @@ class GurobiSolver:
         for name, constraint in lp_problem.lp_constraints.items():
             lhs_expr = [(coef, var.solver_var) for var, coef in constraint.lhs_expression.expr.items()]
             if constraint.slack:
-                lhs_expr += [((-1 if constraint.sense == 'leq' else 1), constraint.slack_variable)]
-                self.add_variable(constraint.slack_variable, constraint.slack_penalty, model)
+                self.add_variable(constraint.slack_variable,
+                                  (-1 if lp_problem.lp_objective.sense == Maximize else 1) * constraint.slack_penalty,
+                                  model)
+                lhs_expr += [((-1 if constraint.sense == 'leq' else 1), constraint.slack_variable.solver_var)]
             lhs_expr = gurobipy.LinExpr(lhs_expr)
             lhs_expr.addConstant(constraint.lhs_expression.const)
             rhs_expr = gurobipy.LinExpr(
