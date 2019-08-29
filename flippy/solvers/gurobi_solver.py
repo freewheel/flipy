@@ -47,26 +47,32 @@ class GurobiSolver:
         self.retrive_values(lp_problem, model)
         return STATUS_MAPPING[solution_status]
 
+    @staticmethod
+    def add_variable(var, obj_coef, model):
+        low_bound = var.low_bound
+        if low_bound is None:
+            low_bound = -gurobipy.GRB.INFINITY
+        up_bound = var.up_bound
+        if up_bound is None:
+            up_bound = gurobipy.GRB.INFINITY
+        if var.var_type == VarType.Continuous:
+            var_type = gurobipy.GRB.CONTINUOUS
+        else:
+            var_type = gurobipy.GRB.INTEGER
+        var.solver_var = model.addVar(low_bound, up_bound, vtype=var_type, obj=obj_coef, name=var.name)
+
     def add_variables(self, lp_problem: LpProblem, model: gurobipy.Model) -> None:
-        for var_name, var in lp_problem.lp_variables.items():
-            low_bound = var.low_bound
-            if low_bound is None:
-                low_bound = -gurobipy.GRB.INFINITY
-            up_bound = var.up_bound
-            if up_bound is None:
-                up_bound = gurobipy.GRB.INFINITY
-            obj_coef = lp_problem.lp_objective.expr.get(var, 0)
-            if var.var_type == VarType.Continuous:
-                var_type = gurobipy.GRB.CONTINUOUS
-            else:
-                var_type = gurobipy.GRB.INTEGER
-            var.solver_var = model.addVar(low_bound, up_bound, vtype=var_type, obj=obj_coef, name=var_name)
+        for _, var in lp_problem.lp_variables.items():
+            self.add_variable(var, lp_problem.lp_objective.expr.get(var, 0), model)
         model.update()
 
     def add_constraints(self, lp_problem: LpProblem, model: gurobipy.Model) -> None:
         for name, constraint in lp_problem.lp_constraints.items():
-            lhs_expr = gurobipy.LinExpr(
-                [(coef, var.solver_var) for var, coef in constraint.lhs_expression.expr.items()])
+            lhs_expr = [(coef, var.solver_var) for var, coef in constraint.lhs_expression.expr.items()]
+            if constraint.slack:
+                lhs_expr += [((-1 if constraint.sense == 'leq' else 1), constraint.slack_variable)]
+                self.add_variable(constraint.slack_variable, constraint.slack_penalty, model)
+            lhs_expr = gurobipy.LinExpr(lhs_expr)
             lhs_expr.addConstant(constraint.lhs_expression.const)
             rhs_expr = gurobipy.LinExpr(
                 [(coef, var.solver_var) for var, coef in constraint.rhs_expression.expr.items()])
