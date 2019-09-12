@@ -1,4 +1,6 @@
 from enum import Enum
+from typing import Optional
+from flippy.utils import Numeric
 
 
 class VarType(Enum):
@@ -8,7 +10,24 @@ class VarType(Enum):
 
 
 class LpVariable:
-    def __init__(self, name, var_type=VarType.Continuous, up_bound=None, low_bound=None):
+    """ A class representing a linear variable """
+
+    def __init__(self, name: str, var_type: VarType = VarType.Continuous, up_bound: Optional[Numeric] = None,
+                 low_bound: Optional[Numeric] = None) -> None:
+        """ Initialize the linear variable
+
+        Parameters
+        ----------
+        name:
+            The name of the variable
+        var_type:
+            The type of variable (continuous, binary, or integer)
+        up_bound:
+            The upper bound for the variable
+        low_bound:
+            The lower bound for the variable
+        """
+
         self._name = name
 
         if var_type not in (VarType.Continuous, VarType.Integer, VarType.Binary):
@@ -23,25 +42,42 @@ class LpVariable:
         self._value = None
 
     @property
-    def name(self):
+    def name(self) -> str:
+        """ Getter for name of variable """
         return self._name
 
     @property
-    def var_type(self):
+    def var_type(self) -> VarType:
+        """ Getter for type of variable """
         return self._var_type
 
     @var_type.setter
-    def var_type(self, v_type):
+    def var_type(self, v_type: VarType) -> None:
+        """ Setter for type of variable
+
+        Parameters
+        ----------
+        v_type:
+            The type to set
+        """
         if not isinstance(v_type, VarType):
             raise ValueError('var_type must be one of Continuous, Integer, Binary not %s' % v_type)
         self._var_type = v_type
 
-    def evaluate(self):
+    def evaluate(self) -> Numeric:
+        """ Returns the value of the variable if set """
         if self._value is None:
             raise ValueError('Value of variable %s is None' % self.name)
         return self._value
 
-    def set_value(self, value):
+    def set_value(self, value: Numeric) -> None:
+        """ Setter for the value of the variable. Raises errors if not in bounds or if mismatched type.
+
+        Parameters
+        ----------
+        value:
+            The value to set for the variable
+        """
         if self.low_bound is not None:
             if self.low_bound > value:
                 raise ValueError(f'value {value} cannot be below lower bound {self.low_bound}')
@@ -57,57 +93,79 @@ class LpVariable:
         self._value = value
 
     @property
-    def value(self):
+    def value(self) -> Numeric:
+        """ Getter for the value of the variable """
         return self._value
 
-    def __hash__(self):
+    def __hash__(self) -> int:
+        """ Hash function for the LpVariable """
         return id(self)
 
     @property
-    def low_bound(self):
+    def low_bound(self) -> Optional[Numeric]:
+        """ Getter for lower bound of variable """
         return self._low_bound
 
     @low_bound.setter
-    def low_bound(self, bound):
+    def low_bound(self, bound: Optional[Numeric]) -> None:
+        """ Setter for lower bound of variable. Raises error if inconsistent bounds.
+
+        Parameters
+        ----------
+        bound:
+            The lower bound to set
+        """
         if self.up_bound is not None:
             if bound > self.up_bound:
                 raise ValueError('lower bound {low} cannot be above upper bound {u}'.format(low=bound, u=self.up_bound))
         self._low_bound = bound
 
     @property
-    def up_bound(self):
+    def up_bound(self) -> Optional[Numeric]:
+        """ Getter for upper bound of variable """
         return self._up_bound
 
     @up_bound.setter
-    def up_bound(self, bound):
+    def up_bound(self, bound: Optional[Numeric]) -> None:
+        """ Setter for upper bound of variable. Raises error if inconsistent bounds.
+
+        Parameters
+        ----------
+        bound:
+            The upper bound to set
+        """
         if self.low_bound is not None:
             if bound < self.low_bound:
                 raise ValueError('upper bound {u} cannot be below lower bound {low}'.format(u=bound, low=self.low_bound))
         self._up_bound = bound
 
-    def is_positive(self):
+    def is_positive(self) -> bool:
+        """ Tells whether the variable is an unbounded non-negative """
         return self.low_bound == 0 and self.up_bound is None
 
-    def is_free(self):
+    def is_free(self) -> bool:
+        """ Tells whether the variable is unbounded """
         return self.low_bound is None and self.up_bound is None
 
-    def is_constant(self):
+    def is_constant(self) -> bool:
+        """ Tells whether the variable is restricted to a constant value """
         return self.low_bound is not None and self.up_bound == self.low_bound
 
-    def to_cplex_lp_variable(self):
+    def to_cplex_lp_variable(self) -> str:
+        """ Converts variable into cplex format """
         if self.is_free():
             return self.name + " free"
         if self.is_constant():
             return self.name + " = %.12g" % self.low_bound
         if self.low_bound is None:
-            s= "-inf <= "
+            string = "-inf <= "
         # Note: XPRESS and CPLEX do not interpret integer variables without
         # explicit bounds
         elif self.low_bound == 0 and self.var_type == VarType.Continuous:
-            s = ""
+            string = ""
         else:
-            s = "%.12g <= " % self.low_bound
-        s += self.name
+            string = "%.12g <= " % self.low_bound
+        string += self.name
         if self.up_bound is not None:
-            s += " <= %.12g" % self.up_bound
-        return s
+            string += " <= %.12g" % self.up_bound
+        return string

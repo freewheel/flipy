@@ -1,10 +1,13 @@
 from typing import Optional
 import gurobipy
 from flippy.lp_problem import LpProblem
-from flippy.lp_variable import VarType
+from flippy.lp_variable import VarType, LpVariable
 from flippy.lp_objective import Maximize
 from flippy.solvers.base_solver import SolutionStatus
+from flippy.utils import Numeric
 
+# Disable gurobipy no-member linting
+# pylint: disable=no-member
 
 STATUS_MAPPING = {
     gurobipy.GRB.OPTIMAL: SolutionStatus.Optimal,
@@ -21,11 +24,29 @@ STATUS_MAPPING = {
 
 
 class GurobiSolver:
+    """ A class for interfacing with gurobi to solve LPs """
+
     def __init__(self, mip_gap: float = 0.1, timeout: Optional[int] = None) -> None:
+        """ Initialize the solver
+
+        Parameters
+        ----------
+        mip_gap:
+            The gap used to determine when a solution to the mip has been found
+        timeout:
+            The time allowed for solving
+        """
         self.mip_gap = mip_gap
         self.timeout = timeout
 
     def solve(self, lp_problem: LpProblem) -> SolutionStatus:
+        """ Form and solve the LP, set the variables to their solution values.
+
+        Parameters
+        ----------
+        lp_problem:
+            The LP to solve
+        """
         model = gurobipy.Model(lp_problem.name)
 
         model.setParam('MIPGap', self.mip_gap)
@@ -44,29 +65,66 @@ class GurobiSolver:
         self.add_variables(lp_problem, model)
         self.add_constraints(lp_problem, model)
         solution_status = self.acutal_solve(model)
-        self.retrive_values(lp_problem, model)
+        self.retrieve_values(lp_problem, model)
         return STATUS_MAPPING[solution_status]
 
+    @staticmethod
+    def add_variable(var: LpVariable, obj_coef: Numeric, model: gurobipy.Model) -> None:
+        """ Add a variable to the LP
+
+        Parameters
+        ----------
+        var:
+            The linear variable to add
+        obj_coef:
+            The coefficient of the linear variable in the objective
+        model:
+            The gurobi model to add the variable to
+        """
+        low_bound = var.low_bound
+        if low_bound is None:
+            low_bound = -gurobipy.GRB.INFINITY
+        up_bound = var.up_bound
+        if up_bound is None:
+            up_bound = gurobipy.GRB.INFINITY
+        if var.var_type == VarType.Continuous:
+            var_type = gurobipy.GRB.CONTINUOUS
+        else:
+            var_type = gurobipy.GRB.INTEGER
+        var.solver_var = model.addVar(low_bound, up_bound, vtype=var_type, obj=obj_coef, name=var.name)
+
     def add_variables(self, lp_problem: LpProblem, model: gurobipy.Model) -> None:
-        for var_name, var in lp_problem.lp_variables.items():
-            low_bound = var.low_bound
-            if low_bound is None:
-                low_bound = -gurobipy.GRB.INFINITY
-            up_bound = var.up_bound
-            if up_bound is None:
-                up_bound = gurobipy.GRB.INFINITY
-            obj_coef = lp_problem.lp_objective.expr.get(var, 0)
-            if var.var_type == VarType.Continuous:
-                var_type = gurobipy.GRB.CONTINUOUS
-            else:
-                var_type = gurobipy.GRB.INTEGER
-            var.solver_var = model.addVar(low_bound, up_bound, vtype=var_type, obj=obj_coef, name=var_name)
+        """ Add the variables in a Flippy LpProblem to a gurobi model
+
+        Parameters
+        ----------
+        lp_problem:
+            The Flippy object to grab the variables from
+        model:
+            The gurobi model to add the variables to
+        """
+        for _, var in lp_problem.lp_variables.items():
+            self.add_variable(var, lp_problem.lp_objective.expr.get(var, 0), model)
         model.update()
 
     def add_constraints(self, lp_problem: LpProblem, model: gurobipy.Model) -> None:
+        """ Add the constraints in a Flippy LpProblem to a gurobi model
+
+        Parameters
+        ----------
+        lp_problem:
+            The Flippy object to grab the constraints from
+        model:
+            The gurobi model to add the constraints to
+        """
         for name, constraint in lp_problem.lp_constraints.items():
-            lhs_expr = gurobipy.LinExpr(
-                [(coef, var.solver_var) for var, coef in constraint.lhs_expression.expr.items()])
+            lhs_expr = [(coef, var.solver_var) for var, coef in constraint.lhs_expression.expr.items()]
+            if constraint.slack:
+                self.add_variable(constraint.slack_variable,
+                                  (-1 if lp_problem.lp_objective.sense == Maximize else 1) * constraint.slack_penalty,
+                                  model)
+                lhs_expr += [((-1 if constraint.sense == 'leq' else 1), constraint.slack_variable.solver_var)]
+            lhs_expr = gurobipy.LinExpr(lhs_expr)
             lhs_expr.addConstant(constraint.lhs_expression.const)
             rhs_expr = gurobipy.LinExpr(
                 [(coef, var.solver_var) for var, coef in constraint.rhs_expression.expr.items()])
@@ -80,14 +138,36 @@ class GurobiSolver:
             constraint.solver_constraint = model.addConstr(lhs_expr, relation, rhs_expr, name)
         model.update()
 
-    def acutal_solve(self, model: gurobipy.Model) -> int:
+    @staticmethod
+    def acutal_solve(model: gurobipy.Model) -> int:
+        """ Solve the LP
+
+        Parameters
+        ----------
+        model:
+            The gurobi model to solve
+        """
         model.optimize()
         return model.Status
 
-    def retrive_values(self, lp_problem: LpProblem, model: gurobipy.Model) -> None:
+    @staticmethod
+    def retrieve_values(lp_problem: LpProblem, model: gurobipy.Model) -> None:
+        """ Extract the value of variables from the gurobi model and set them into the Flippy objects
+
+        Parameters
+        ----------
+        lp_problem:
+            The Flippy object into which the variable values will be set
+        model:
+            The gurobi model to grab the variable values from
+        """
         try:
-            for var, value in zip(lp_problem.lp_variables.values(),
-                                  model.getAttr(gurobipy.GRB.Attr.X, model.getVars())):
-                var._value = value
+            for var in lp_problem.lp_variables.values():
+                gurobi_var = model.getVarByName(var.name)
+                var.set_value(gurobi_var.X)
+            for constraint in lp_problem.lp_constraints.values():
+                if constraint.slack:
+                    gurobi_var = model.getVarByName(constraint.slack_variable.name)
+                    constraint.slack_variable.set_value(gurobi_var.X)
         except (gurobipy.GurobiError, AttributeError):
             pass
