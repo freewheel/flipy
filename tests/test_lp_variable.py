@@ -45,4 +45,4 @@ class TestLpVariable(object):
         assert 'cannot be' in str(e.value)
 
     def test_write(self, x):
-        assert x.to_cplex_lp_variable() == 'x <= 10'
+        assert x.to_cplex_str() == 'x <= 10'

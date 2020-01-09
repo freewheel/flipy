@@ -147,6 +147,15 @@ class TestLpConstraint:
         lp_constraint.slack = False
         assert not lp_constraint.check()
 
-    def test_write(self, lhs_expression, rhs_expression):
-        lp_constraint = LpConstraint(lhs_expression, 'geq', rhs_expression)
-        assert lp_constraint.to_cplex_lp_constraint('constraint') == 'constraint: - 2 y >= -5\n'
+    def test_to_cplex_terms(self, x, y):
+        # 2x + 3y + 7
+        lhs_expression = LpExpression('lhs', {x: 2, y: 3}, 7)
+        # x + 5y + 2
+        rhs_expression = LpExpression('rhs', {x: 1, y: 5}, 2)
+
+        constraint = LpConstraint(lhs_expression,
+                                  'leq',
+                                  rhs_expression,
+                                  'test_constraint')
+
+        assert constraint.to_cplex_terms() == ['x', '- 2 y', '<=', '-5']

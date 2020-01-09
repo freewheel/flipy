@@ -86,137 +86,79 @@ class LpProblem:
         for var in lp_constraint.rhs_expression.expr.keys():
             self.add_variable(var)
 
-    def solve(self) -> None:
-        """ Solve the LP problem """
+    @staticmethod
+    def _group_terms(terms, max_line_length=120):
+        lines = []
 
-    def to_str(self, mip: bool = True) -> str:
-        """ Convert the LP problem to a str
+        line_len = 0
+        start_i = 0
+        for i, term in enumerate(terms):
+            if line_len + len(term) >= max_line_length:
+                lines.append(' '.join(terms[start_i:i]))
+                start_i = i
+                line_len = 0
+            line_len += len(term) + 1
+            if i == len(terms) - 1:
+                lines.append(' '.join(terms[start_i:]))
 
-        Parameters
-        ----------
-        mip:
-            Whether there are integer or binary variables
+        return lines
 
-        """
-        result = []
-        if not self.lp_objective:
-            raise Exception('No objective')
-        result.append(f'\\* {self.name} *\\')
-        if self.lp_objective.sense == Minimize:
-            result.append('Minimize')
-        else:
-            result.append('Maximize')
-
-        obj_name = self.lp_objective.name if self.lp_objective.name else 'OBJ'
-
-        result.append(self.lp_objective.to_cplex_lp_affine_expr(obj_name, constant=0))
-        result.append('Subject To')
-        constr_keys = sorted(list(self.lp_constraints.keys()))
-        for constr_key in constr_keys:
-            constraint = self.lp_constraints[constr_key]
-            result.append(constraint.to_cplex_lp_constraint(constr_key))
-
-        variables = self.lp_variables
-
-        if mip:
-            bounded_vars = [self.lp_variables[var] for var in variables if not self.lp_variables[var].is_positive() and
-                            self.lp_variables[var].var_type is VarType.Continuous]
-        else:
-            bounded_vars = [self.lp_variables[var] for var in variables if not self.lp_variables[var].is_positive()]
-        if bounded_vars:
-            result.append('Bounds')
-            for var in bounded_vars:
-                result.append(f'{var.to_cplex_lp_variable()}')
-        if mip:
-            # Integer non-binary variables
-            bounded_vars = [self.lp_variables[var] for var in variables if self.lp_variables[var].var_type is VarType.Integer]
-            if bounded_vars:
-                result.append('Generals')
-                for var in bounded_vars:
-                    result.append(var.name)
-            # Binary variables
-            bounded_vars = [self.lp_variables[var] for var in variables if self.lp_variables[var].var_type is VarType.Binary]
-            if bounded_vars:
-                result.append('Binaries')
-                for var in bounded_vars:
-                    result.append(var.name)
-
-        result.append("End")
-        return '\n'.join(result)
-
-    def write_lp(self, buffer: TextIO, mip: int = 1) -> TextIO:
-        """ Write the given Lp problem to a .lp file.
-
-        This function writes the specifications (objective function,
-        constraints, variables) of the defined Lp problem to a file.
-
-        Parameters
-        ----------
-        buffer:
-            Buffer to write the lp to
-        mip:
-            Whether the lp has integer or binary variables
-
-        Returns
-        -------
-        buffer
-            The buffer with the lp written to it
-        """
+    def write_lp(self, buffer):
         if not self.lp_objective:
             raise Exception('No objective')
 
-        buffer.write(f"\\* {self.name} *\\\n")
+        buffer.write(f'\\* {self.name} *\\\n')
         if self.lp_objective.sense == Minimize:
-            buffer.write("Minimize\n")
+            buffer.write('Minimize\n')
         else:
-            buffer.write("Maximize\n")
+            buffer.write('Maximize\n')
 
-        obj_name = self.lp_objective.name
+        objective_name = self.lp_objective.name if self.lp_objective.name else "OBJ"
 
-        if not obj_name:
-            obj_name = "OBJ"
-        slack = {constraint.slack_variable: constraint.slack_penalty * (1 if self.lp_objective.sense == Minimize else -1)
-                 for constraint in self.lp_constraints.values() if constraint.slack}
-        buffer.write(self.lp_objective.to_cplex_lp_affine_expr(obj_name, constant=0,
-                                                               slack=slack or None))
+        obj_slack_expr = {constraint.slack_variable: constraint.slack_penalty * (1 if self.lp_objective.sense == Minimize else -1)
+                          for constraint in self.lp_constraints.values() if constraint.slack}
+
+        terms = [f'{objective_name}:'] + self.lp_objective.to_cplex_terms(slack=obj_slack_expr)
+
+        obj_lines = self._group_terms(terms)
+
+        for obj_line in obj_lines:
+            buffer.write(obj_line)
+            buffer.write('\n')
+
         buffer.write("Subject To\n")
-        keys = list(self.lp_constraints.keys())
-        keys.sort()
-        for key in keys:
-            constraint = self.lp_constraints[key]
-            buffer.write(constraint.to_cplex_lp_constraint(key))
 
-        variables = self.lp_variables
-        # check if any names are longer than 100 characters
-        long_names = [var for var in variables if len(var) > 100]
-        if long_names:
-            raise Exception('Variable names too long for Lp format\n' + str(long_names))
+        constraints = sorted(self.lp_constraints.keys())
+        for con in constraints:
+            constraint = self.lp_constraints[con]
+            terms = [f'{con}:'] + constraint.to_cplex_terms()
+            cons_lines = self._group_terms(terms)
+            for line in cons_lines:
+                buffer.write(line)
+                buffer.write('\n')
 
-        # Bounds on non-"positive" variables
-        # Note: XPRESS and CPLEX do not interpret integer variables without
-        # explicit bounds
-        if mip:
-            bounded_vars = [self.lp_variables[var] for var in variables if not self.lp_variables[var].is_positive() and
-                            self.lp_variables[var].var_type is VarType.Continuous]
-        else:
-            bounded_vars = [self.lp_variables[var] for var in variables if not self.lp_variables[var].is_positive()]
+        # Bounded variables
+        bounded_vars = [var for var in self.lp_variables.values() if not var.is_positive_free()]
         if bounded_vars:
             buffer.write("Bounds\n")
             for var in bounded_vars:
-                buffer.write(f"{var.to_cplex_lp_variable()}\n")
-        if mip:
-            # Integer non-binary variables
-            bounded_vars = [self.lp_variables[var] for var in variables if self.lp_variables[var].var_type is VarType.Integer]
-            if bounded_vars:
-                buffer.write("Generals\n")
-                for var in bounded_vars:
-                    buffer.write(f"{var.name}\n")
-            # Binary variables
-            bounded_vars = [self.lp_variables[var] for var in variables if self.lp_variables[var].var_type is VarType.Binary]
-            if bounded_vars:
-                buffer.write("Binaries\n")
-                for var in bounded_vars:
-                    buffer.write(f"{var.name}\n")
+                buffer.write(f"{var.to_cplex_str()}\n")
+
+        # Integer non-binary variables
+        integer_vars = [
+            var for var in self.lp_variables.values() if (var.var_type is VarType.Integer and not var.is_binary())
+        ]
+        if integer_vars:
+            buffer.write("Generals\n")
+            for var in integer_vars:
+                buffer.write(f"{var.name}\n")
+
+        # Binary variables
+        binary_vars = [var for var in self.lp_variables.values() if var.var_type is VarType.Binary]
+        if binary_vars:
+            buffer.write("Binaries\n")
+            for var in binary_vars:
+                buffer.write(f"{var.name}\n")
 
         buffer.write("End\n")
 
@@ -252,7 +194,7 @@ def mathify_expression(string_split: List[str]) -> Mapping[str, str]:
             dct[recent_term['variable']] = float(recent_term['sign'] + recent_term['coefficient'])
 
     for expr in string_split:
-        if expr in {'+', '-'}: # this is the start of a new term
+        if expr in {'+', '-'}:  # this is the start of a new term
             add_recent_term(dct, recent_term)
             recent_term = {'variable': None, 'coefficient': '1', 'sign': expr}
         try:

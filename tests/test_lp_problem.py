@@ -78,7 +78,7 @@ class TestLpProblem(object):
         buffer = StringIO()
         problem.write_lp(buffer)
         flippy_string = buffer.getvalue()
-        assert flippy_string == '\\* test_problem *\\\nMinimize\nminimize_cpm: 998 x\nSubject To\nconstraint: x >= -2\nBounds\nx <= 10\nEnd\n'
+        assert flippy_string == '\\* test_problem *\\\nMinimize\nminimize_cpm: 998 x + 8\nSubject To\nconstraint: x >= -2\nBounds\nx <= 10\nEnd\n'
 
     def test_write_slack(self, problem, x):
         objective = LpObjective(name='minimize_cpm', expression={x: 998}, constant=8, sense=Maximize)
@@ -90,4 +90,4 @@ class TestLpProblem(object):
         buffer = StringIO()
         problem.write_lp(buffer)
         flippy_string = buffer.getvalue()
-        assert flippy_string == '\\* test_problem *\\\nMaximize\nminimize_cpm: 998 x - 100 constraint_slack_variable\nSubject To\nconstraint: x - constraint_slack_variable <= -2\nBounds\nx <= 10\nEnd\n'
+        assert flippy_string == '\\* test_problem *\\\nMaximize\nminimize_cpm: 998 x - 100 constraint_slack_variable + 8\nSubject To\nconstraint: - constraint_slack_variable + x <= -2\nBounds\nx <= 10\nEnd\n'

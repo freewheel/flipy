@@ -34,7 +34,7 @@ class LpConstraint:
         """
         self.lhs_expression = lhs_expression if not copy_expr else copy.copy(lhs_expression)
         if rhs_expression:
-            self.rhs_expression = rhs_expression if not copy_expr else copy.copy(rhs_expression)
+            self.rhs_expression = rhs_expression
         else:
             self.rhs_expression = LpExpression()
         self.sense = sense
@@ -44,16 +44,17 @@ class LpConstraint:
 
         self._slack_variable = None
 
-        self._shift_variables_left()
-        self._shift_constant_right()
+    def _shift_variables(self):
+        new_expr = LpExpression(expression=copy.copy(self.lhs_expression.expr))
 
-    def _shift_variables_left(self) -> None:
-        """ Moves all variables on rhs to lhs """
-        if not self.rhs_expression.expr:
-            return
         for var, coeff in self.rhs_expression.expr.items():
-            self.lhs_expression.expr[var] -= coeff
-        self.rhs_expression.expr.clear()
+            new_expr.expr[var] -= coeff
+
+        if self.slack:
+            new_expr.expr[self.slack_variable] = -1 if self.sense == 'leq' else 1
+
+        const = self.rhs_expression.const - self.lhs_expression.const
+        return new_expr, const
 
     def _shift_constant_right(self) -> None:
         """ Moves the constant on the lhs to the rhs """
@@ -191,28 +192,9 @@ class LpConstraint:
                                                  (-1 if self.sense == 'leq' else 1)),
                                                 self.rhs_expression.evaluate())
 
-    def to_cplex_lp_constraint(self, name: str) -> str:
-        """ Returns a constraint as a string
+    def to_cplex_terms(self):
+        new_expr, const = self._shift_variables()
 
-        Parameters
-        ----------
-        name:
-            The name of the constraint
-        """
-        # Add on the slack only when writing the constraint out
-        lhs_result, line = self.lhs_expression.to_cplex_variables_only(name,
-                                                                       slack={self.slack_variable: -1 if self.sense == 'leq' else 1}
-                                                                       if self.slack else None)
-        if self.lhs_expression.const:
-            if self.lhs_expression.const < 0:
-                term = f" - {-self.lhs_expression.const}"
-                line += [term]
-            elif self.lhs_expression.const > 0:
-                term = f" + {self.lhs_expression.const}"
-                line += [term]
-
-        if not list(self.lhs_expression.expr.keys()):
-            line += ["0"]
         if self.sense.lower() == 'leq':
             sense = '<='
         elif self.sense.lower() == 'geq':
@@ -220,34 +202,8 @@ class LpConstraint:
         else:
             sense = '='
 
-        rhs_result, rhs_line = self.rhs_expression.to_cplex_variables_only(name)
-
-        # Could probably do some better checks on line length when trying to do combining
-        if not list(self.rhs_expression.expr.keys()) and not self.rhs_expression.const:
-            rhs_line += ["0"]
-
-        # Note this does not check the length
-        # If variables exist
-        if list(self.rhs_expression.expr.keys()):
-            if self.rhs_expression.const < 0:
-                term = f" - {-self.rhs_expression.const}"
-            elif self.rhs_expression.const > 0:
-                term = f" + {self.rhs_expression.const}"
-            rhs_line += [term]
-        else:
-            term = str(self.rhs_expression.const)
-            rhs_line += [term]
-
-        term = f" {sense} {rhs_result[0][1:] if rhs_result else ''.join(rhs_line[1:]) if rhs_line else ''}"
-        if _count_characters(line) + len(term) > LpCplexLPLineSize:
-            lhs_result += ["".join(line)]
-            line = [term]
-        else:
-            line += [term]
-        lhs_result += ["".join(line)]
-
-        if rhs_result:
-            lhs_result += ["".join(rhs_line)]
-
-        result = '\n'.join(lhs_result)
-        return f"{result}\n"
+        terms = []
+        terms += new_expr.to_cplex_terms()
+        terms.append(sense)
+        terms.append(str(const))
+        return terms

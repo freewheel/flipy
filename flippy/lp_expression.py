@@ -139,35 +139,55 @@ class LpExpression:
                 line += [term]
         return result, line
 
-    def to_cplex_lp_affine_expr(self, name: str, constant: Numeric = 1,
-                                slack: Optional[Mapping[LpVariable, Numeric]] = None) -> str:
-        """ Returns a string that represents the expression in lp format
+    def _to_cplex_term_str(self, var_name, coeff, is_first=False):
+        if coeff == 0:
+            return ''
+        if coeff > 0:
+            sign = '' if is_first else '+ '
+            if coeff == 1:
+                return f'{sign}{var_name}'
+            else:
+                return f'{sign}{coeff:.12g} {var_name}'
+        else:
+            sign = '- '
+            if coeff == -1:
+                return f'{sign}{var_name}'
+            else:
+                return f'{sign}{-coeff:.12g} {var_name}'
+
+    def to_cplex_terms(self, slack: Optional[Mapping[LpVariable, Numeric]] = None) -> List[str]:
+        """ Returns a list of string that represents the expression in lp format split in terms
 
         Parameters
         ----------
-        name:
-            The name of the expression
-        constant:
-            The constant term for the expression
         slack:
             All slack variables being used and their coefficients
+
+        Returns
+        -------
+        list(str)
         """
-        # refactored to use a list for speed in iron python
-        result, line = self.to_cplex_variables_only(name, slack=slack)
-        if not self.expr or all(self.expr[x] == 0 for x in self.expr):
-            term = f" {self.const}"
-        else:
-            term = ""
-            if constant:
-                if self.const < 0:
-                    term = f" - {-self.const}"
-                elif self.const > 0:
-                    term = f" + {self.const}"
-        if _count_characters(line) + len(term) > LpCplexLPLineSize:
-            result += ["".join(line)]
-            line = [term]
-        else:
-            line += [term]
-        result += ["".join(line)]
-        result = "\n".join(result)
-        return f'{result}\n'
+        terms = []
+        is_first = True
+        slack = slack or {}
+        for var in self.sorted_keys():
+            coeff = self.expr[var]
+            if coeff == 0:
+                continue
+            terms.append(self._to_cplex_term_str(var.name, coeff, is_first=is_first))
+            is_first = False
+
+        for slack_var in sorted(slack.keys(), key=lambda v: v.name):
+            coeff = slack[slack_var]
+            if coeff == 0:
+                continue
+            terms.append(self._to_cplex_term_str(slack_var.name, coeff, is_first=is_first))
+            is_first = False
+
+        if self.const < 0:
+            terms.append(f'- {-self.const}')
+        elif self.const > 0:
+            terms.append(f'+ {self.const}')
+        elif self.const == 0 and not terms:
+            terms.append(f'{self.const}')
+        return terms

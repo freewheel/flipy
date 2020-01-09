@@ -139,7 +139,10 @@ class LpVariable:
                 raise ValueError('upper bound {u} cannot be below lower bound {low}'.format(u=bound, low=self.low_bound))
         self._up_bound = bound
 
-    def is_positive(self) -> bool:
+    def is_binary(self) -> bool:
+        return self._var_type == VarType.Integer and self.low_bound == 0 and self.up_bound == 1
+
+    def is_positive_free(self) -> bool:
         """ Tells whether the variable is an unbounded non-negative """
         return self.low_bound == 0 and self.up_bound is None
 
@@ -151,21 +154,22 @@ class LpVariable:
         """ Tells whether the variable is restricted to a constant value """
         return self.low_bound is not None and self.up_bound == self.low_bound
 
-    def to_cplex_lp_variable(self) -> str:
+    def to_cplex_str(self) -> str:
         """ Converts variable into cplex format """
         if self.is_free():
-            return self.name + " free"
+            return f'{self.name} free'
         if self.is_constant():
-            return self.name + " = %.12g" % self.low_bound
+            return f'{self.name} = {self.low_bound:.12g}'
+
         if self.low_bound is None:
-            string = "-inf <= "
-        # Note: XPRESS and CPLEX do not interpret integer variables without
-        # explicit bounds
+            lhs = '-inf <= '
         elif self.low_bound == 0 and self.var_type == VarType.Continuous:
-            string = ""
+            lhs = ''
         else:
-            string = "%.12g <= " % self.low_bound
-        string += self.name
+            lhs = f'{self.low_bound:.12g} <= '
+
         if self.up_bound is not None:
-            string += " <= %.12g" % self.up_bound
-        return string
+            rhs = f' <= {self.up_bound:.12g}'
+        else:
+            rhs = ''
+        return lhs + self.name + rhs
