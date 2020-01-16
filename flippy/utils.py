@@ -3,6 +3,8 @@ from typing import Union, List
 # The default length of line allowed in LP files
 LpCplexLPLineSize = 78
 
+INF = 1e20
+
 Numeric = Union[int, float]
 
 
