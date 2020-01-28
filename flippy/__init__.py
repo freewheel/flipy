@@ -1,5 +1,6 @@
 """FreeWheel Linear Programming Interface for Python"""
 
+from flippy.lp_reader import LpReader
 from flippy.lp_problem import LpProblem
 from flippy.lp_constraint import LpConstraint
 from flippy.lp_expression import LpExpression
