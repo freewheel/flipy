@@ -1,5 +1,6 @@
 import os
 import tempfile
+import platform
 import subprocess
 
 from flippy.lp_problem import LpProblem
@@ -22,15 +23,36 @@ STATUS_MAPPING = {
 class CoinSolver:
     """ A class for interfacing with cbc to solve LPs"""
 
-    def __init__(self, cbc_bin_path: str = 'cbc') -> None:
-        """ Initialize the solver
+    CBC_BIN_PATH = {
+        ('Linux', '32bit'): 'bin/cbc-linux64/cbc',
+        ('Linux', '64bit'): 'bin/cbc-linux64/cbc',
+        ('Darwin', '64bit'): 'bin/cbc-osx/cbc',
+        ('Windows', '32bit'): 'bin/cbc-win32/cbc.exe',
+        ('Windows', '64bit'): 'bin/cbc-win64/cbc.exe',
+    }
 
-        Parameters
-        ----------
-        cbc_bin_path:
-            Where to find the cbc solver
+    @classmethod
+    def _find_cbc_binary(cls) -> str:
+        """ Find the CBC binary path based on the current system and architecture
+
+        Returns
+        -------
+        str
         """
-        self.bin_path = os.getenv('CBC_SOLVER_BIN', cbc_bin_path)
+        if 'CBC_SOLVER_BIN' in os.environ:
+            return os.getenv('CBC_SOLVER_BIN')
+        system = platform.system()
+        arch, _ = platform.architecture()
+        try:
+            bin_path = cls.CBC_BIN_PATH[system, arch]
+        except KeyError:
+            raise SolverError(f'no CBC solver found for system {system} {arch}, '
+                              'please set the solver path manually with environment variable \'CBC_SOLVER_BIN\'')
+        return os.path.join(os.path.dirname(os.path.abspath(__file__)), bin_path)
+
+    def __init__(self) -> None:
+        """ Initialize the solver """
+        self.bin_path = os.getenv('CBC_SOLVER_BIN', self._find_cbc_binary())
 
     def solve(self, lp_problem: LpProblem) -> SolutionStatus:
         """ Form and solve the lp
