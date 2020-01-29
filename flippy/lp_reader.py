@@ -348,6 +348,8 @@ class LpReader:
 
         for var_name, bound in bounds.items():
             var = cls._find_variable(lp_variables, var_name)
+            if 'geq' not in bound or 'gt' not in bound:
+                var.low_bound = 0
             for sense, const in bound.items():
                 if sense == 'leq':
                     var.up_bound = const

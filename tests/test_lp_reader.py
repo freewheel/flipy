@@ -344,6 +344,7 @@ class TestLpReader:
         Bounds
          0 <= x1 <= 40
          2 <= x4 <= 3
+         x3 <= 3
         General
          x4
         Binary
@@ -361,8 +362,8 @@ class TestLpReader:
         assert lp_problem.lp_variables['x2'].up_bound == 1
         assert lp_problem.lp_variables['x2'].var_type == VarType.Binary
 
-        assert lp_problem.lp_variables['x3'].low_bound is None
-        assert lp_problem.lp_variables['x3'].up_bound is None
+        assert lp_problem.lp_variables['x3'].low_bound == 0
+        assert lp_problem.lp_variables['x3'].up_bound == 3.0
         assert lp_problem.lp_variables['x3'].var_type == VarType.Continuous
 
         assert lp_problem.lp_variables['x4'].low_bound == 2
