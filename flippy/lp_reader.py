@@ -1,3 +1,4 @@
+import os
 import io
 import re
 from collections import defaultdict, namedtuple
@@ -266,11 +267,11 @@ class LpReader:
 
         Parameters
         ----------
-        variable_name: str
-            Name of the variable
-
         variables: dict(str -> LpVariable)
             Mapping from variable names to LpVariable
+
+        var_name: str
+            Name of the variable
 
         Returns
         -------
@@ -285,19 +286,31 @@ class LpReader:
             return var
 
     @classmethod
-    def read(cls, buffer: Union[IO, TextIO, io.StringIO]) -> LpProblem:
+    def read(cls, obj: Union[str, IO, TextIO, io.StringIO]) -> LpProblem:
         """
 
         Parameters
         ----------
-        buffer
+        obj: str or buffer
 
         Returns
         -------
         LpProblem
             Parsed LpProblem based on the LP file
         """
-        content = buffer.read()
+        if hasattr(obj, 'read'):
+            content = obj.read()
+        elif isinstance(obj, (str, bytes)):
+            content = obj
+            try:
+                if os.path.isfile(content):
+                    with open(content, "rb") as f:
+                        content = f.read()
+            except (TypeError, ValueError):
+                pass
+        else:
+            raise TypeError("Cannot read object of type %r" % type(obj).__name__)
+
         content = content.strip()
 
         problem_name = cls._find_problem_name(content)
