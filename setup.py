@@ -16,6 +16,7 @@ setup(
     version=flipy.version,
     packages=find_packages(),
     include_package_data=True,
+    package_data={'flipy.solvers': ['bin/*/**']},
     install_requires=[],
     classifiers=[
         'Operating System :: Microsoft :: Windows', 'Operating System :: MacOS :: MacOS X', 'Operating System :: POSIX',
