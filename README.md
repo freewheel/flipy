@@ -4,8 +4,6 @@
 
 Flipy is a Python linear programming interface library, originall developed by [FreeWheel](https://freewheel.com). It currently supports Gurobi and CBC as the backend solver.
 
-To use CBC, follow the [CBC documentation here](https://github.com/coin-or/Cbc#building-from-source) and make sure the command cbc is available on your machine.
-
 To use Gurobi, make sure you have a Gurobi license file, and gurobipy is installed in your Python environment. You can find details from [Gurobi’s documentation](https://www.gurobi.com/documentation/8.1/quickstart_mac/the_gurobi_python_interfac.html).
 
 Flipy requires Python 3.6 or newer.

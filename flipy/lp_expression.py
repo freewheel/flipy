@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import math
 from collections import defaultdict
 from typing import Optional, Mapping, List
@@ -31,7 +29,7 @@ class LpExpression:
             self.expr = defaultdict(int, expression)
         self.const = constant
 
-    def __eq__(self, other: LpExpression) -> bool:
+    def __eq__(self, other: 'LpExpression') -> bool:
         """ An equality function for LpExpressions
 
         Parameters
@@ -52,7 +50,7 @@ class LpExpression:
         """ Gives the value of the expression """
         return sum(var.evaluate() * coeff for var, coeff in self.expr.items()) + self.const
 
-    def add_expression(self, other: LpExpression) -> None:
+    def add_expression(self, other: 'LpExpression') -> None:
         """ Adds another expression to this expression (summing coefficients)
 
         Parameters
