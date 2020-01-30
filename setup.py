@@ -3,18 +3,18 @@ import os
 import sys
 
 from setuptools import setup, find_packages
-import flippy
+import flipy
 
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(
-    name = "flippy",
+    name = "flipy",
     author = "FreeWheel",
     description = "FreeWheel Linear Programming Interface for Python",
     long_description = read('README.md'),
-    version = flippy.version,
+    version = flipy.version,
     packages = find_packages(),
 
     include_package_data = True,

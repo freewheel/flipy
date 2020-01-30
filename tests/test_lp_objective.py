@@ -1,5 +1,5 @@
 import pytest
-from flippy.lp_objective import LpObjective, Minimize, Maximize
+from flipy.lp_objective import LpObjective, Minimize, Maximize
 
 
 @pytest.fixture

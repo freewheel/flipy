@@ -3,8 +3,8 @@ import tempfile
 import platform
 import subprocess
 
-from flippy.lp_problem import LpProblem
-from flippy.solvers.base_solver import SolutionStatus
+from flipy.lp_problem import LpProblem
+from flipy.solvers.base_solver import SolutionStatus
 
 
 class SolverError(Exception):
@@ -60,7 +60,7 @@ class CoinSolver:
         Parameters
         ----------
         lp_problem:
-            The Flippy LP to solve
+            The Flipy LP to solve
         """
         temp_dir = tempfile.TemporaryDirectory()
         lp_file_path = os.path.join(temp_dir.name, 'problem.lp')
@@ -102,7 +102,7 @@ class CoinSolver:
         filename:
             The solution to read
         lp_problem:
-            The Flippy object to set the variable values in
+            The Flipy object to set the variable values in
         """
         values = {}
         for var in lp_problem.lp_variables.values():

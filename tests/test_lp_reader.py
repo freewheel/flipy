@@ -2,8 +2,8 @@ import io
 
 import pytest
 
-from flippy.lp_reader import LpReader
-from flippy.lp_variable import VarType
+from flipy.lp_reader import LpReader
+from flipy.lp_variable import VarType
 
 
 class TestLpReader:

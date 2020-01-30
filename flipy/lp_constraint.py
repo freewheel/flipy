@@ -3,9 +3,9 @@ import operator
 import warnings
 from typing import Optional
 
-from flippy.lp_expression import LpExpression
-from flippy.lp_variable import LpVariable, VarType
-from flippy.utils import LpCplexLPLineSize, _count_characters, Numeric
+from flipy.lp_expression import LpExpression
+from flipy.lp_variable import LpVariable, VarType
+from flipy.utils import LpCplexLPLineSize, _count_characters, Numeric
 
 
 class LpConstraint:

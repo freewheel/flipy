@@ -1,6 +1,6 @@
 from enum import Enum
 from typing import Optional
-from flippy.utils import Numeric
+from flipy.utils import Numeric
 
 
 class VarType(Enum):

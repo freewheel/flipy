@@ -1,5 +1,5 @@
 import pytest
-from flippy.lp_variable import LpVariable, VarType
+from flipy.lp_variable import LpVariable, VarType
 
 
 @pytest.mark.usefixtures('x')

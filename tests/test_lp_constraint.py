@@ -1,8 +1,8 @@
 import pytest
 
-from flippy.lp_constraint import LpConstraint
-from flippy.lp_expression import LpExpression
-from flippy.lp_variable import LpVariable, VarType
+from flipy.lp_constraint import LpConstraint
+from flipy.lp_expression import LpExpression
+from flipy.lp_variable import LpVariable, VarType
 
 
 @pytest.fixture

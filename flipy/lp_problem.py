@@ -1,8 +1,8 @@
 from typing import Optional, List
 
-from flippy.lp_variable import LpVariable, VarType
-from flippy.lp_constraint import LpConstraint
-from flippy.lp_objective import LpObjective, Minimize
+from flipy.lp_variable import LpVariable, VarType
+from flipy.lp_constraint import LpConstraint
+from flipy.lp_objective import LpObjective, Minimize
 
 
 class LpProblem:

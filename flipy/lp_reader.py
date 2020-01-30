@@ -4,12 +4,12 @@ import re
 from collections import defaultdict, namedtuple
 from typing import Union, Optional, Mapping, List, Tuple, Iterable, IO, TextIO
 
-from flippy.utils import Numeric, INF
-from flippy.lp_problem import LpProblem
-from flippy.lp_constraint import LpConstraint
-from flippy.lp_expression import LpExpression
-from flippy.lp_variable import VarType, LpVariable
-from flippy.lp_objective import LpObjective, Minimize, Maximize
+from flipy.utils import Numeric, INF
+from flipy.lp_problem import LpProblem
+from flipy.lp_constraint import LpConstraint
+from flipy.lp_expression import LpExpression
+from flipy.lp_variable import VarType, LpVariable
+from flipy.lp_objective import LpObjective, Minimize, Maximize
 
 
 class LpReader:
@@ -242,7 +242,7 @@ class LpReader:
     @classmethod
     def _find_problem_name(cls, content: str) -> str:
         """ Find the name of the problem by inferring the first comment section. If no comments are found,
-        use "flippy_problem" as the problem name
+        use "flipy_problem" as the problem name
 
         Parameters
         ----------
@@ -259,7 +259,7 @@ class LpReader:
         if match:
             return match.group().strip()
         else:
-            return 'flippy_problem'
+            return 'flipy_problem'
 
     @classmethod
     def _find_variable(cls, variables: Mapping[str, LpVariable], var_name: str) -> LpVariable:

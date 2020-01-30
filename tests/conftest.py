@@ -1,5 +1,5 @@
 import pytest
-from flippy.lp_variable import LpVariable
+from flipy.lp_variable import LpVariable
 
 
 @pytest.fixture

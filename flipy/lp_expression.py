@@ -4,8 +4,8 @@ import math
 from collections import defaultdict
 from typing import Optional, Mapping, List, Tuple
 
-from flippy.lp_variable import LpVariable
-from flippy.utils import LpCplexLPLineSize, _count_characters, Numeric
+from flipy.lp_variable import LpVariable
+from flipy.utils import LpCplexLPLineSize, _count_characters, Numeric
 
 
 class LpExpression:

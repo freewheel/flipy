@@ -1,9 +1,9 @@
 import pytest
 import math
-from flippy.lp_expression import LpExpression
+from flipy.lp_expression import LpExpression
 from collections import defaultdict
-from flippy.lp_expression import LpExpression
-from flippy.lp_variable import LpVariable
+from flipy.lp_expression import LpExpression
+from flipy.lp_variable import LpVariable
 
 @pytest.fixture
 def expression(x):

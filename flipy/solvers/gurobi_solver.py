@@ -1,10 +1,10 @@
 from typing import Optional
 import gurobipy
-from flippy.lp_problem import LpProblem
-from flippy.lp_variable import VarType, LpVariable
-from flippy.lp_objective import Maximize
-from flippy.solvers.base_solver import SolutionStatus
-from flippy.utils import Numeric
+from flipy.lp_problem import LpProblem
+from flipy.lp_variable import VarType, LpVariable
+from flipy.lp_objective import Maximize
+from flipy.solvers.base_solver import SolutionStatus
+from flipy.utils import Numeric
 
 # Disable gurobipy no-member linting
 # pylint: disable=no-member
@@ -94,12 +94,12 @@ class GurobiSolver:
         var.solver_var = model.addVar(low_bound, up_bound, vtype=var_type, obj=obj_coef, name=var.name)
 
     def add_variables(self, lp_problem: LpProblem, model: gurobipy.Model) -> None:
-        """ Add the variables in a Flippy LpProblem to a gurobi model
+        """ Add the variables in a Flipy LpProblem to a gurobi model
 
         Parameters
         ----------
         lp_problem:
-            The Flippy object to grab the variables from
+            The Flipy object to grab the variables from
         model:
             The gurobi model to add the variables to
         """
@@ -108,12 +108,12 @@ class GurobiSolver:
         model.update()
 
     def add_constraints(self, lp_problem: LpProblem, model: gurobipy.Model) -> None:
-        """ Add the constraints in a Flippy LpProblem to a gurobi model
+        """ Add the constraints in a Flipy LpProblem to a gurobi model
 
         Parameters
         ----------
         lp_problem:
-            The Flippy object to grab the constraints from
+            The Flipy object to grab the constraints from
         model:
             The gurobi model to add the constraints to
         """
@@ -152,12 +152,12 @@ class GurobiSolver:
 
     @staticmethod
     def retrieve_values(lp_problem: LpProblem, model: gurobipy.Model) -> None:
-        """ Extract the value of variables from the gurobi model and set them into the Flippy objects
+        """ Extract the value of variables from the gurobi model and set them into the Flipy objects
 
         Parameters
         ----------
         lp_problem:
-            The Flippy object into which the variable values will be set
+            The Flipy object into which the variable values will be set
         model:
             The gurobi model to grab the variable values from
         """

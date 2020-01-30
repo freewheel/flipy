@@ -1,7 +1,7 @@
 from typing import Optional, Mapping, Union
-from flippy.lp_variable import LpVariable
-from flippy.lp_expression import LpExpression
-from flippy.utils import Numeric
+from flipy.lp_variable import LpVariable
+from flipy.lp_expression import LpExpression
+from flipy.utils import Numeric
 
 
 class Minimize:
@@ -44,7 +44,7 @@ class LpObjective(LpExpression):
 
         Returns
         -------
-        flippy.lp_objective.ObjectiveType
+        flipy.lp_objective.ObjectiveType
         """
         return self._sense
 
@@ -54,7 +54,7 @@ class LpObjective(LpExpression):
 
         Parameters
         ----------
-        sense: flippy.lp_objective.Minimize or flippy.lp_objective.Maximize
+        sense: flipy.lp_objective.Minimize or flipy.lp_objective.Maximize
         """
         if sense not in [Minimize, Maximize]:
             raise ValueError("Sense must be one of %s, %s not %s" % (Minimize, Maximize, sense))
