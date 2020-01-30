@@ -27,7 +27,7 @@ Here is a simple example for Flipy:
 ```python
 import flipy
 
-solver = flipy.GurobiSolver()
+solver = flipy.CoinSolver()
 
 # 3 <= x <= 5, 0 <= y <= 10
 x = flipy.LpVariable('x', up_bound=5, low_bound=3)
