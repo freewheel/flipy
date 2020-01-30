@@ -147,7 +147,7 @@ class TestLpConstraint:
         lp_constraint.slack = False
         assert not lp_constraint.check()
 
-    def test_to_cplex_terms(self, x, y):
+    def test_to_lp_terms(self, x, y):
         # 2x + 3y + 7
         lhs_expression = LpExpression('lhs', {x: 2, y: 3}, 7)
         # x + 5y + 2
@@ -158,4 +158,4 @@ class TestLpConstraint:
                                   rhs_expression,
                                   'test_constraint')
 
-        assert constraint.to_cplex_terms() == ['x', '- 2 y', '<=', '-5']
+        assert constraint.to_lp_terms() == ['x', '- 2 y', '<=', '-5']

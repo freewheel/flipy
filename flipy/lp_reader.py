@@ -14,7 +14,7 @@ from flipy.lp_objective import LpObjective, Minimize, Maximize
 
 class LpReader:
     """ A class for reading lp files """
-    _numeric_regex_pattern = re.compile('^ \s* [-+]? \s* (?: (?: \d* \. \d+ ) | (?: \d+ \.? ) )(?: [Ee] [+-]? \d+ ) ?',
+    _numeric_regex_pattern = re.compile(r'^ \s* [-+]? \s* (?: (?: \d* \. \d+ ) | (?: \d+ \.? ) )(?: [Ee] [+-]? \d+ ) ?',
                                         re.VERBOSE)
     _sense_mapping = {'<=': 'leq', '=<': 'leq', '>=': 'geq', '=>': 'geq', '<': 'lt', '>': 'gt', '=': 'eq'}
 
@@ -30,6 +30,11 @@ class LpReader:
         ('x', 3.0)
         >>> LpReader._parse_term('- 3 x')
         ('x', -3.0)
+
+        Raises
+        ------
+        NameError
+            If one of the variables doesn't have a valid name
 
         Parameters
         ----------
@@ -49,10 +54,10 @@ class LpReader:
 
         if match:
             coeff = float(match.group().replace(' ', ''))
-            coeff_start, coeff_end = match.span()
+            _, coeff_end = match.span()
         else:
             coeff = 1
-            coeff_start, coeff_end = 0, 0
+            coeff_end = 0
 
         var = term[coeff_end:].strip()
 
@@ -60,24 +65,24 @@ class LpReader:
             return None, coeff
 
         if '0' < var[0] < '9' or var[0] == '.':
-            raise Exception(f"variable '{var}' does not have a valid name: "
+            raise NameError(f"variable '{var}' does not have a valid name: "
                             "A variable name should not begin with a number or a period")
 
         if ' ' in var:
-            raise Exception(f"variable '{var}' does not have a valid name: "
+            raise NameError(f"variable '{var}' does not have a valid name: "
                             "A variable name should not have whitespaces")
 
-        for c in var:
+        for char in var:
             # ASCII hack: https://en.wikipedia.org/wiki/ASCII
             # http://lpsolve.sourceforge.net/5.0/CPLEX-format.htm
-            if c < '!' or c > '~' or c in ('*', '+', '-', '\\', ']', '^', ':', '[', '<', '=', '>'):
-                raise Exception(f"variable '{var}' does not have a valid name")
+            if char < '!' or char > '~' or char in ('*', '+', '-', '\\', ']', '^', ':', '[', '<', '=', '>'):
+                raise NameError(f"variable '{var}' does not have a valid name")
 
         return var, coeff
 
     @classmethod
-    def _mathify_expression(cls, input: str) -> Tuple[Mapping[str, Numeric], Numeric]:
-        """ Convert a CPLEX format expression in to a dictionary
+    def _mathify_expression(cls, expr_str: str) -> Tuple[Mapping[str, Numeric], Numeric]:
+        """ Convert an LP format expression in to a dictionary
 
         >>> LpReader._mathify_expression('3x + 4y - 5')
         ({'x': 3.0, 'y': 4.0}, -5.0)
@@ -86,7 +91,7 @@ class LpReader:
 
         Parameters
         ----------
-        input: str
+        expr_str: str
             A CPLEX format expression like "3x + 4y - 5"
 
         Returns
@@ -98,11 +103,11 @@ class LpReader:
         """
         expr = defaultdict(int)
         const = 0
-        input = input.strip()
-        if not input:
+        expr_str = expr_str.strip()
+        if not expr_str:
             return expr, const
 
-        tokens = [token.strip() for token in re.split(r'(-|\+)', input)]
+        tokens = [token.strip() for token in re.split(r'(-|\+)', expr_str)]
 
         sign = 1
 
@@ -126,9 +131,9 @@ class LpReader:
     def _remove_comments(cls, content: str) -> str:
         """ Remove the comments from a string
 
-        >>> LpReader._remove_comments(r' 3x + y \ this is a comment section \ < 5 ')
+        >>> LpReader._remove_comments(r' 3x + y \\ this is a comment section \\ < 5 ')
         ' 3x + y  < 5 '
-        >>> LpReader._remove_comments(r' 3x + y \ this is a comment section')
+        >>> LpReader._remove_comments(r' 3x + y \\ this is a comment section')
         ' 3x + y '
 
         Parameters
@@ -187,6 +192,11 @@ class LpReader:
         It searches for the keywords of objective, constraints, bounds, generals, binaries, end and split
         the content by section
 
+        Raises
+        ------
+        ValueError
+            When the lp file is not in a valid LP file format
+
         Parameters
         ----------
         content
@@ -223,12 +233,12 @@ class LpReader:
                 pass
 
         if is_maximize is None:
-            raise Exception('file must start with an objective')
+            raise ValueError('file must start with an objective')
 
         sections.sort(key=lambda x: x.keyword_start)  # sort by the start index of the section
 
         if sections[-1].name != 'end':
-            raise Exception('file must end with an "end" keyword')
+            raise ValueError('file must end with an "end" keyword')
 
         parsed_sections = {}
 
@@ -258,8 +268,7 @@ class LpReader:
         match = pattern.search(content)
         if match:
             return match.group().strip()
-        else:
-            return 'flipy_problem'
+        return 'flipy_problem'
 
     @classmethod
     def _find_variable(cls, variables: Mapping[str, LpVariable], var_name: str) -> LpVariable:
@@ -276,6 +285,7 @@ class LpReader:
         Returns
         -------
         LpVariable
+            LpVariable found or created
         """
 
         try:
@@ -287,7 +297,12 @@ class LpReader:
 
     @classmethod
     def read(cls, obj: Union[str, IO, TextIO, io.StringIO]) -> LpProblem:
-        """
+        """ Reads in an LP file and parse it into a flipy.LpProblem object
+
+        Raises
+        ------
+        ValueError
+            If `obj` is unreadable and is not a LP string
 
         Parameters
         ----------
@@ -309,7 +324,7 @@ class LpReader:
             except (TypeError, ValueError):
                 pass
         else:
-            raise TypeError("Cannot read object of type %r" % type(obj).__name__)
+            raise ValueError("Cannot read object of type %r" % type(obj).__name__)
 
         content = content.strip()
 
@@ -346,6 +361,30 @@ class LpReader:
 
             lp_constraints.append(LpConstraint(lhs_expr, constraint['sense'], rhs_expr, name=constraint['name']))
 
+        cls._parse_variables(lp_variables, bounds, generals, binaries)
+
+        return LpProblem(problem_name, lp_objective=lp_objective, lp_constraints=lp_constraints)
+
+    @classmethod
+    def _parse_variables(cls, lp_variables: Mapping[str, LpVariable],
+                         bounds: Mapping[str, Mapping[str, float]],
+                         generals: List[str],
+                         binaries: List[str]):
+        """ Parses the information from bounds, generals and binaries
+
+        Sets variable type, low_bound and up_bound accordingly
+
+        Parameters
+        ----------
+        lp_variables: dict(str -> LpVariable)
+            Variables of the problem
+        bounds:
+            Bounds parsed from cls._parse_bounds
+        generals:
+            General variable names parsed from cls._parse_generals
+        binaries:
+            Binary variable names parsed from cls._parse_binaries
+        """
         for var_name, bound in bounds.items():
             var = cls._find_variable(lp_variables, var_name)
             if 'geq' not in bound or 'gt' not in bound:
@@ -372,8 +411,6 @@ class LpReader:
             var.var_type = VarType.Binary
             var.low_bound = 0
             var.up_bound = 1
-
-        return LpProblem(problem_name, lp_objective=lp_objective, lp_constraints=lp_constraints)
 
     @classmethod
     def _parse_named_expression(cls, named_expr: str) -> Tuple[Optional[str], str, float]:
@@ -420,6 +457,11 @@ class LpReader:
         >>> LpReader._parse_constraints("c1: x1 + 3 <= x2 - 5")
         [{'name': 'c1', 'lhs': {'x1': 1}, 'lhs_const': 3.0, 'sense': 'leq', 'rhs': {'x2': 1}, 'rhs_const': -5.0}]
 
+        Raises
+        ------
+        ValueError
+            If the constraint being parsed is not in a valid format
+
         Parameters
         ----------
         constraints: str
@@ -428,6 +470,7 @@ class LpReader:
         Returns
         -------
         list(dict(str -> union(str, float)))
+            Constraints in a list of dictionaries
         """
 
         parsed_constraints = []
@@ -439,7 +482,7 @@ class LpReader:
         sense_matches = [match.span() for match in re.finditer(sense_pattern, constraints)]
 
         start = 0
-        for i in range(len(sense_matches)):
+        for i, _ in enumerate(sense_matches):
             sense_match = sense_matches[i]
             next_newline = newline_pattern.search(constraints, pos=sense_match[1])
             if next_newline:
@@ -452,7 +495,7 @@ class LpReader:
                 sense = cls._sense_mapping[constraints[sense_match[0]:sense_match[1]]]
                 rhs, rhs_const = cls._mathify_expression(constraints[sense_match[1]:end])
             except Exception:
-                raise Exception(f'constraint {constraints[start:end]} doesn\'t appear to be valid')
+                raise ValueError(f'constraint {constraints[start:end]} doesn\'t appear to be valid')
 
             parsed_constraints.append({
                 'name': cons_name,
@@ -542,7 +585,7 @@ class LpReader:
                 parsed_bounds[previous_term]['geq'] = -INF
             if term_type == 'sense':
                 next_term = terms[i + 1]
-                next_term_type, parsed_next_term = cls._parse_bound_term(next_term)
+                _, parsed_next_term = cls._parse_bound_term(next_term)
                 if previous_term_type == 'variable':
                     parsed_bounds[previous_term][parsed_term] = parsed_next_term
                 elif previous_term_type == 'constant':

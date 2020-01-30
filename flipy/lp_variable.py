@@ -4,6 +4,7 @@ from flipy.utils import Numeric
 
 
 class VarType(Enum):
+    """ Variable types for LpVariable """
     Continuous = 1
     Integer = 2
     Binary = 3
@@ -15,6 +16,11 @@ class LpVariable:
     def __init__(self, name: str, var_type: VarType = VarType.Continuous, up_bound: Optional[Numeric] = None,
                  low_bound: Optional[Numeric] = None) -> None:
         """ Initialize the linear variable
+
+        Raises
+        ------
+        ValueError
+            If `var_type` is not one of `VarType.Continuous`, `VarType.Integer`, `VarType.Binary`
 
         Parameters
         ----------
@@ -55,6 +61,11 @@ class LpVariable:
     def var_type(self, v_type: VarType) -> None:
         """ Setter for type of variable
 
+        Raises
+        ------
+        ValueError
+            If `var_type` is not one of `VarType.Continuous`, `VarType.Integer` or `VarType.Binary`
+
         Parameters
         ----------
         v_type:
@@ -72,6 +83,11 @@ class LpVariable:
 
     def set_value(self, value: Numeric) -> None:
         """ Setter for the value of the variable. Raises errors if not in bounds or if mismatched type.
+
+        Raises
+        ------
+        ValueError
+            If value does not meet variable's bounds or variable type
 
         Parameters
         ----------
@@ -110,6 +126,11 @@ class LpVariable:
     def low_bound(self, bound: Optional[Numeric]) -> None:
         """ Setter for lower bound of variable. Raises error if inconsistent bounds.
 
+        Raises
+        ------
+        ValueError
+            If variable's lower bound is higher than the upper bound
+
         Parameters
         ----------
         bound:
@@ -129,6 +150,11 @@ class LpVariable:
     def up_bound(self, bound: Optional[Numeric]) -> None:
         """ Setter for upper bound of variable. Raises error if inconsistent bounds.
 
+        Raises
+        ------
+        ValueError
+            If variable's upper bound is lower than the lower bound
+
         Parameters
         ----------
         bound:
@@ -140,6 +166,7 @@ class LpVariable:
         self._up_bound = bound
 
     def is_binary(self) -> bool:
+        """ Tells whether the variable is binary """
         return self._var_type == VarType.Integer and self.low_bound == 0 and self.up_bound == 1
 
     def is_positive_free(self) -> bool:
@@ -154,8 +181,8 @@ class LpVariable:
         """ Tells whether the variable is restricted to a constant value """
         return self.low_bound is not None and self.up_bound == self.low_bound
 
-    def to_cplex_str(self) -> str:
-        """ Converts variable into cplex format """
+    def to_lp_str(self) -> str:
+        """ Converts variable into lp format """
         if self.is_free():
             return f'{self.name} free'
         if self.is_constant():

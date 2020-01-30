@@ -11,17 +11,16 @@ class SolverError(Exception):
     pass
 
 
-STATUS_MAPPING = {
-    'Optimal': SolutionStatus.Optimal,
-    'Infeasible': SolutionStatus.Infeasible,
-    'Integer': SolutionStatus.Infeasible,
-    'Unbounded': SolutionStatus.Unbounded,
-    'Stopped': SolutionStatus.NotSolved
-}
-
-
 class CoinSolver:
     """ A class for interfacing with cbc to solve LPs"""
+
+    STATUS_MAPPING = {
+        'Optimal': SolutionStatus.Optimal,
+        'Infeasible': SolutionStatus.Infeasible,
+        'Integer': SolutionStatus.Infeasible,
+        'Unbounded': SolutionStatus.Unbounded,
+        'Stopped': SolutionStatus.NotSolved
+    }
 
     CBC_BIN_PATH = {
         ('Linux', '32bit'): 'bin/cbc-linux64/cbc',
@@ -30,6 +29,10 @@ class CoinSolver:
         ('Windows', '32bit'): 'bin/cbc-win32/cbc.exe',
         ('Windows', '64bit'): 'bin/cbc-win64/cbc.exe',
     }
+
+    def __init__(self) -> None:
+        """ Initialize the solver """
+        self.bin_path = os.getenv('CBC_SOLVER_BIN', self._find_cbc_binary())
 
     @classmethod
     def _find_cbc_binary(cls) -> str:
@@ -49,10 +52,6 @@ class CoinSolver:
             raise SolverError(f'no CBC solver found for system {system} {arch}, '
                               'please set the solver path manually with environment variable \'CBC_SOLVER_BIN\'')
         return os.path.join(os.path.dirname(os.path.abspath(__file__)), bin_path)
-
-    def __init__(self) -> None:
-        """ Initialize the solver """
-        self.bin_path = os.getenv('CBC_SOLVER_BIN', self._find_cbc_binary())
 
     def solve(self, lp_problem: LpProblem) -> SolutionStatus:
         """ Form and solve the lp
@@ -93,8 +92,8 @@ class CoinSolver:
             raise SolverError(f"Error while trying to execute {self.bin_path}")
         pipe.close()
 
-    @staticmethod
-    def read_solution(filename: str, lp_problem: LpProblem) -> SolutionStatus:
+    @classmethod
+    def read_solution(cls, filename: str, lp_problem: LpProblem) -> SolutionStatus:
         """ Read in variable values from a saved solution file
 
         Parameters
@@ -113,7 +112,7 @@ class CoinSolver:
 
         with open(filename) as f:
             status_str = f.readline().split()[0]
-            status = STATUS_MAPPING.get(status_str, SolutionStatus.NotSolved)
+            status = cls.STATUS_MAPPING.get(status_str, SolutionStatus.NotSolved)
             for line in f:
                 if len(line) <= 2:
                     break

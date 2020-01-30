@@ -52,6 +52,11 @@ class LpObjective(LpExpression):
     def sense(self, sense: ObjectiveType) -> None:
         """ Setter for the sens eof the objective. Raises error if not valid sense.
 
+        Raises
+        ------
+        ValueError
+            If `sense` is not one of `flipy.lp_objective.Minimize` or `flipy.lp_objective.Maximize`
+
         Parameters
         ----------
         sense: flipy.lp_objective.Minimize or flipy.lp_objective.Maximize

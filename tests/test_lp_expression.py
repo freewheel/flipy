@@ -53,10 +53,10 @@ class TestLpExpression(object):
     def test__eq__(self, expression, x, y):
         assert expression == LpExpression(name='text_expr_3', expression={x: 998, y: 0}, constant=8.0)
 
-    def test_to_cplex_lp_expr(self, x, y):
+    def test_to_lp_lp_expr(self, x, y):
         expr = LpExpression(expression={x: 1, y: -1}, constant=100)
-        assert expr.to_cplex_terms() == ['x', '- y', '+ 100']
+        assert expr.to_lp_terms() == ['x', '- y', '+ 100']
 
-    def test_to_cplex_lp_expr_constant_zero(self, expression):
+    def test_to_lp_lp_expr_constant_zero(self, expression):
         expr = LpExpression(expression={}, constant=0)
-        assert expr.to_cplex_terms() == ['0']
+        assert expr.to_lp_terms() == ['0']

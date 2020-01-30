@@ -1,5 +1,7 @@
 from typing import Optional
+
 import gurobipy
+
 from flipy.lp_problem import LpProblem
 from flipy.lp_variable import VarType, LpVariable
 from flipy.lp_objective import Maximize
@@ -9,22 +11,22 @@ from flipy.utils import Numeric
 # Disable gurobipy no-member linting
 # pylint: disable=no-member
 
-STATUS_MAPPING = {
-    gurobipy.GRB.OPTIMAL: SolutionStatus.Optimal,
-    gurobipy.GRB.INFEASIBLE: SolutionStatus.Infeasible,
-    gurobipy.GRB.INF_OR_UNBD: SolutionStatus.Infeasible,
-    gurobipy.GRB.UNBOUNDED: SolutionStatus.Unbounded,
-    gurobipy.GRB.ITERATION_LIMIT: SolutionStatus.NotSolved,
-    gurobipy.GRB.NODE_LIMIT: SolutionStatus.NotSolved,
-    gurobipy.GRB.TIME_LIMIT: SolutionStatus.NotSolved,
-    gurobipy.GRB.SOLUTION_LIMIT: SolutionStatus.NotSolved,
-    gurobipy.GRB.INTERRUPTED: SolutionStatus.NotSolved,
-    gurobipy.GRB.NUMERIC: SolutionStatus.NotSolved
-}
-
 
 class GurobiSolver:
     """ A class for interfacing with gurobi to solve LPs """
+
+    STATUS_MAPPING = {
+        gurobipy.GRB.OPTIMAL: SolutionStatus.Optimal,
+        gurobipy.GRB.INFEASIBLE: SolutionStatus.Infeasible,
+        gurobipy.GRB.INF_OR_UNBD: SolutionStatus.Infeasible,
+        gurobipy.GRB.UNBOUNDED: SolutionStatus.Unbounded,
+        gurobipy.GRB.ITERATION_LIMIT: SolutionStatus.NotSolved,
+        gurobipy.GRB.NODE_LIMIT: SolutionStatus.NotSolved,
+        gurobipy.GRB.TIME_LIMIT: SolutionStatus.NotSolved,
+        gurobipy.GRB.SOLUTION_LIMIT: SolutionStatus.NotSolved,
+        gurobipy.GRB.INTERRUPTED: SolutionStatus.NotSolved,
+        gurobipy.GRB.NUMERIC: SolutionStatus.NotSolved
+    }
 
     def __init__(self, mip_gap: float = 0.1, timeout: Optional[int] = None) -> None:
         """ Initialize the solver
@@ -64,9 +66,9 @@ class GurobiSolver:
 
         self.add_variables(lp_problem, model)
         self.add_constraints(lp_problem, model)
-        solution_status = self.acutal_solve(model)
+        model.optimize()
         self.retrieve_values(lp_problem, model)
-        return STATUS_MAPPING[solution_status]
+        return self.STATUS_MAPPING[model.Status]
 
     @staticmethod
     def add_variable(var: LpVariable, obj_coef: Numeric, model: gurobipy.Model) -> None:
@@ -137,18 +139,6 @@ class GurobiSolver:
                 relation = gurobipy.GRB.EQUAL
             constraint.solver_constraint = model.addConstr(lhs_expr, relation, rhs_expr, name)
         model.update()
-
-    @staticmethod
-    def acutal_solve(model: gurobipy.Model) -> int:
-        """ Solve the LP
-
-        Parameters
-        ----------
-        model:
-            The gurobi model to solve
-        """
-        model.optimize()
-        return model.Status
 
     @staticmethod
     def retrieve_values(lp_problem: LpProblem, model: gurobipy.Model) -> None:

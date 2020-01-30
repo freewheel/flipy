@@ -5,7 +5,7 @@ from typing import Optional
 
 from flipy.lp_expression import LpExpression
 from flipy.lp_variable import LpVariable, VarType
-from flipy.utils import LpCplexLPLineSize, _count_characters, Numeric
+from flipy.utils import Numeric
 
 
 class LpConstraint:
@@ -45,6 +45,16 @@ class LpConstraint:
         self._slack_variable = None
 
     def _shift_variables(self):
+        """ Shifts all variables to the left hand side of the constraint, and shifts the
+        constant to the right hand side of the constraints
+
+        Returns
+        -------
+        flipy.LpExpression
+            The shfited lhs expression
+        float
+            The shifted rhs constant
+        """
         new_expr = LpExpression(expression=copy.copy(self.lhs_expression.expr))
 
         for var, coeff in self.rhs_expression.expr.items():
@@ -69,18 +79,23 @@ class LpConstraint:
         return self._lhs_expression
 
     @lhs_expression.setter
-    def lhs_expression(self, lhs_ex: LpExpression) -> None:
+    def lhs_expression(self, lhs_exp: LpExpression) -> None:
         """ Setter for lhs expression
+
+        Raises
+        ------
+        ValueError
+            If `lhs_exp` is not an LpExpression objective
 
         Parameters
         ----------
-        lhs_ex:
+        lhs_exp:
             The lhs expression to set
         """
-        if not isinstance(lhs_ex, LpExpression):
+        if not isinstance(lhs_exp, LpExpression):
             raise ValueError('LHS of LpConstraint must be LpExpression')
 
-        self._lhs_expression = lhs_ex  # pylint: disable=W0201
+        self._lhs_expression = lhs_exp  # pylint: disable=W0201
 
     @property
     def rhs_expression(self) -> LpExpression:
@@ -88,18 +103,23 @@ class LpConstraint:
         return self._rhs_expression
 
     @rhs_expression.setter
-    def rhs_expression(self, rhs_ex: LpExpression) -> None:
+    def rhs_expression(self, rhs_exp: LpExpression) -> None:
         """ Setter for rhs expression
 
-        Returns
+        Raises
+        ------
+        ValueError
+            If `rhs_exp` is not an LpExpression objective
+
+        Parameters
         -------
-        rhs_ex:
+        rhs_exp:
             The rhs expression to set
         """
-        if not isinstance(rhs_ex, LpExpression):
+        if not isinstance(rhs_exp, LpExpression):
             raise ValueError('RHS of LpConstraint must be LpExpression')
 
-        self._rhs_expression = rhs_ex  # pylint: disable=W0201
+        self._rhs_expression = rhs_exp  # pylint: disable=W0201
 
     @property
     def sense(self) -> str:
@@ -109,6 +129,11 @@ class LpConstraint:
     @sense.setter
     def sense(self, snse: str) -> None:
         """ Setter for the sense of the constraint. Raises error if not one of 'leq', 'eq', 'geq'
+
+        Raises
+        ------
+        ValueError
+            If `snse` is not one of `leq`, `eq` or `geq`
 
         Parameters
         ----------
@@ -144,6 +169,11 @@ class LpConstraint:
     def slack(self, slck: bool) -> None:
         """ Setter for slack indicator
 
+        Raises
+        ------
+        ValueError
+            If `slck` is not a bool type variable
+
         Parameters
         ----------
         slck:
@@ -171,13 +201,22 @@ class LpConstraint:
     def slack_penalty(self, penalty: Numeric) -> None:
         """ Setter for slack penalty of the constraint. Raises error if negative.
 
+        Raises
+        ------
+        ValueError
+            If `penalty` has positive value
+
         Parameters
         ----------
         penalty:
             The slack penalty to set
+
+        Raises
+        ------
+        ValueError
         """
         if penalty < 0:
-            raise ValueError('Slack penalty must be nonnegative')
+            raise ValueError('Slack penalty must be non-negative')
         if penalty == 0 and self.slack:
             warnings.warn('Slack penalty is zero. No incentive to meet this constraint')
 
@@ -192,7 +231,15 @@ class LpConstraint:
                                                  (-1 if self.sense == 'leq' else 1)),
                                                 self.rhs_expression.evaluate())
 
-    def to_cplex_terms(self):
+    def to_lp_terms(self):
+        """
+        Returns the constraint as a list of terms like ['5', 'a', '<=', '10']
+
+        Returns
+        -------
+        list(str)
+            List of terms in string
+        """
         new_expr, const = self._shift_variables()
 
         if self.sense.lower() == 'leq':
@@ -203,7 +250,7 @@ class LpConstraint:
             sense = '='
 
         terms = []
-        terms += new_expr.to_cplex_terms()
+        terms += new_expr.to_lp_terms()
         terms.append(sense)
         terms.append(str(const))
         return terms

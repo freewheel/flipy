@@ -7,7 +7,13 @@ from flipy.lp_expression import LpExpression
 from flipy.solvers.cbc_solver import CoinSolver
 from flipy.lp_variable import LpVariable, VarType
 from flipy.solvers.base_solver import SolutionStatus
-from flipy.solvers.gurobi_solver import GurobiSolver
+try:
+    from flipy.solvers.gurobi_solver import GurobiSolver
+except ImportError:
+    class GurobiSolver:
+        """ Dumb GurobiSolver class that returns an error when called """
+        def __init__(self, *args, **kwargs):
+            raise ModuleNotFoundError('gurobipy not installed')
 from flipy.lp_objective import LpObjective, Minimize, Maximize
 
 version = '0.0.1'

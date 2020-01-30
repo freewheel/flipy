@@ -38,19 +38,33 @@ class LpProblem:
     def add_variable(self, lp_variable: LpVariable) -> None:
         """ Adds a variable to the internal dictionary of the problem
 
+        Raises
+        ------
+        TypeError
+            If `lp_variable` is not an `LpVariable` object
+        NameError
+            If the name of `lp_variable` conflicts with an existing variable in the problem
+
         Parameters
         ----------
         lp_variable:
             The variable to add
         """
         if not isinstance(lp_variable, LpVariable):
-            raise Exception('%s is not an LpVariable' % lp_variable)
+            raise TypeError('%s is not an LpVariable' % lp_variable)
         if self.lp_variables.get(lp_variable.name, lp_variable) != lp_variable:
-            raise Exception('LP variable name %s conflicts with an existing LP variable' % lp_variable.name)
+            raise NameError('LP variable name %s conflicts with an existing LP variable' % lp_variable.name)
         self.lp_variables[lp_variable.name] = lp_variable
 
     def set_objective(self, lp_objective: LpObjective) -> None:
         """ Sets the objective of the LP problem and adds all variables. Raises error if already has an objective.
+
+        Raises
+        ------
+        TypeError
+            If `lp_objective` is not an `LpObjective` object
+        Exception
+            If the objective is already set in the problem
 
         Parameters
         ----------
@@ -58,7 +72,7 @@ class LpProblem:
             The objective to set
         """
         if not isinstance(lp_objective, LpObjective):
-            raise Exception('%s is not an LpObjective' % lp_objective)
+            raise TypeError('%s is not an LpObjective' % lp_objective)
         if self.lp_objective:
             raise Exception('LP objective is already set')
         for var in lp_objective.expr.keys():
@@ -68,15 +82,22 @@ class LpProblem:
     def add_constraint(self, lp_constraint: LpConstraint) -> None:
         """ Adds a constraint to the LP problem and adds all variables. Raises error if namespace conflict.
 
+        Raises
+        ------
+        TypeError
+            If `lp_constraint` is not an `LpConstraint` object
+        NameError
+            If the name of `lp_constraint` conflicts with an existing constraint in the problem
+
         Parameters
         ----------
         lp_constraint:
             The constraint to add
         """
         if not isinstance(lp_constraint, LpConstraint):
-            raise Exception('%s is not an LpConstraint' % lp_constraint)
+            raise TypeError('%s is not an LpConstraint' % lp_constraint)
         if self.lp_constraints.get(lp_constraint.name, lp_constraint) != lp_constraint:
-            raise Exception('LP constraint name %s conflicts with an existing LP constraint' % lp_constraint.name)
+            raise NameError('LP constraint name %s conflicts with an existing LP constraint' % lp_constraint.name)
         self.lp_constraints[lp_constraint.name] = lp_constraint
         for var in lp_constraint.lhs_expression.expr.keys():
             self.add_variable(var)
@@ -85,6 +106,20 @@ class LpProblem:
 
     @staticmethod
     def _group_terms(terms, max_line_length=120):
+        """ Groups terms into list of lines. Each line doesn't exceed certain width.
+
+        Parameters
+        ----------
+        terms: list(str)
+            Lift of terms in string
+        max_line_length: int
+            Maximum length of a line
+
+        Returns
+        -------
+        list(str)
+            List of lines
+        """
         lines = []
 
         line_len = 0
@@ -101,6 +136,18 @@ class LpProblem:
         return lines
 
     def write_lp(self, buffer):
+        """ Writes the problem in an LP format to a buffer
+
+        Raises
+        ------
+        Exception
+            If the problem doesn't have an objective
+
+        Parameters
+        ----------
+        buffer: buffer-like
+            A buffer-like object with a `write` method
+        """
         if not self.lp_objective:
             raise Exception('No objective')
 
@@ -115,7 +162,7 @@ class LpProblem:
         obj_slack_expr = {constraint.slack_variable: constraint.slack_penalty * (1 if self.lp_objective.sense == Minimize else -1)
                           for constraint in self.lp_constraints.values() if constraint.slack}
 
-        terms = [f'{objective_name}:'] + self.lp_objective.to_cplex_terms(slack=obj_slack_expr)
+        terms = [f'{objective_name}:'] + self.lp_objective.to_lp_terms(slack=obj_slack_expr)
 
         obj_lines = self._group_terms(terms)
 
@@ -128,7 +175,7 @@ class LpProblem:
         constraints = sorted(self.lp_constraints.keys())
         for con in constraints:
             constraint = self.lp_constraints[con]
-            terms = [f'{con}:'] + constraint.to_cplex_terms()
+            terms = [f'{con}:'] + constraint.to_lp_terms()
             cons_lines = self._group_terms(terms)
             for line in cons_lines:
                 buffer.write(line)
@@ -139,7 +186,7 @@ class LpProblem:
         if bounded_vars:
             buffer.write("Bounds\n")
             for var in bounded_vars:
-                buffer.write(f"{var.to_cplex_str()}\n")
+                buffer.write(f"{var.to_lp_str()}\n")
 
         # Integer non-binary variables
         integer_vars = [
@@ -158,5 +205,3 @@ class LpProblem:
                 buffer.write(f"{var.name}\n")
 
         buffer.write("End\n")
-
-        return buffer

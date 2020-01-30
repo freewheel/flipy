@@ -390,7 +390,7 @@ class TestLpReader:
 
         lp_problem = LpReader.read(io.StringIO(lp_str))
 
-        assert lp_problem.lp_objective.to_cplex_terms() == ['x1', '+ 2 x2', '+ 3 x3', '+ x4', '+ 10.0']
+        assert lp_problem.lp_objective.to_lp_terms() == ['x1', '+ 2 x2', '+ 3 x3', '+ x4', '+ 10.0']
         assert lp_problem.lp_objective.name == 'obj'
         assert lp_problem.lp_objective.const == 10
 
@@ -413,9 +413,9 @@ class TestLpReader:
         """
 
         lp_problem = LpReader.read(io.StringIO(lp_str))
-        assert lp_problem.lp_constraints['c1'].to_cplex_terms() == ['- x1', '+ x2', '+ x3', '+ 10 x4', '<=', '20.0']
-        assert lp_problem.lp_constraints['c2'].to_cplex_terms() == ['x1', '- 3 x2', '+ x3', '<=', '30.0']
-        assert lp_problem.lp_constraints['c3'].to_cplex_terms() == ['x2', '- 3.5 x4', '=', '0.0']
+        assert lp_problem.lp_constraints['c1'].to_lp_terms() == ['- x1', '+ x2', '+ x3', '+ 10 x4', '<=', '20.0']
+        assert lp_problem.lp_constraints['c2'].to_lp_terms() == ['x1', '- 3 x2', '+ x3', '<=', '30.0']
+        assert lp_problem.lp_constraints['c3'].to_lp_terms() == ['x2', '- 3.5 x4', '=', '0.0']
 
     def test_constraints_exceptions(self):
         lp_str = """
