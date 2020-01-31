@@ -2,6 +2,9 @@
 
 ![flipy_logo_60pt](https://user-images.githubusercontent.com/1311594/73421313-6cea4500-42f3-11ea-9ea7-25a0af70ac4f.png)
 
+[![supported](https://img.shields.io/pypi/pyversions/flipy.svg)](https://pypi.python.org/pypi/flipy/)
+[![Build Status](http://img.shields.io/travis/freewheel/flipy.svg?style=flat-square)](https://travis-ci.com/freewheel/flipy) 
+
 Flipy is a Python linear programming interface library, originall developed by [FreeWheel](https://freewheel.com). It currently supports Gurobi and CBC as the backend solver.
 
 To use Gurobi, make sure you have a Gurobi license file, and gurobipy is installed in your Python environment. You can find details from [Gurobi’s documentation](https://www.gurobi.com/documentation/8.1/quickstart_mac/the_gurobi_python_interfac.html).
