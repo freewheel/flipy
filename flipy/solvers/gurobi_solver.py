@@ -1,6 +1,6 @@
 from typing import Optional
 
-import gurobipy
+import gurobipy  # pylint: disable=import-error
 
 from flipy.lp_problem import LpProblem
 from flipy.lp_variable import VarType, LpVariable
@@ -44,10 +44,20 @@ class GurobiSolver:
     def solve(self, lp_problem: LpProblem) -> SolutionStatus:
         """ Form and solve the LP, set the variables to their solution values.
 
+        Raises
+        ------
+        Exception
+            Raised when lp_problem is not an instance of LpProblem
+
         Parameters
         ----------
         lp_problem:
             The LP to solve
+
+        Returns
+        -------
+        flipy.SolutionStatus
+            The status of the solution
         """
         model = gurobipy.Model(lp_problem.name)
 

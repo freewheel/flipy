@@ -8,7 +8,7 @@ from flipy.solvers.base_solver import SolutionStatus
 
 
 class SolverError(Exception):
-    pass
+    """ Exception raised when a solver error is encountered """
 
 
 class CBCSolver:
@@ -38,9 +38,15 @@ class CBCSolver:
     def _find_cbc_binary(cls) -> str:
         """ Find the CBC binary path based on the current system and architecture
 
+        Raises
+        ------
+        SolverError
+            If CBC solver encountered an error
+
         Returns
         -------
         str
+            Path to the CBC binary file
         """
         if 'CBC_SOLVER_BIN' in os.environ:
             return os.getenv('CBC_SOLVER_BIN')
@@ -56,10 +62,20 @@ class CBCSolver:
     def solve(self, lp_problem: LpProblem) -> SolutionStatus:
         """ Form and solve the lp
 
+        Raises
+        ------
+        SolverError
+            If CBC solver encountered an error
+
         Parameters
         ----------
         lp_problem:
             The Flipy LP to solve
+
+        Returns
+        -------
+        flipy.SolutionStatus
+            The status of the solution
         """
         temp_dir = tempfile.TemporaryDirectory()
         lp_file_path = os.path.join(temp_dir.name, 'problem.lp')
@@ -78,9 +94,14 @@ class CBCSolver:
     def call_cbc(self, lp_file_path: str, solution_file_path: str):
         """ Call cbc to solve an lp file
 
+        Raises
+        ------
+        SolverError
+            If CBC solver encountered an error
+
         Parameters
         ----------
-        lp_file_path
+        lp_file_path:
             The location of the lp to solve
         solution_file_path:
             Where to record the solution
@@ -102,6 +123,11 @@ class CBCSolver:
             The solution to read
         lp_problem:
             The Flipy object to set the variable values in
+
+        Returns
+        -------
+        flipy.SolutionStatus
+            The status of the solution
         """
         values = {}
         for var in lp_problem.lp_variables.values():

@@ -9,7 +9,7 @@ rcfile=.pylintrc
 
 # Add files or directories to the blacklist. They should be base names, not
 # paths.
-ignore=optimizer_pb2.py,optimizer_pb2_grpc.py,health_pb2.py,health_pb2_grpc.py,nbcu_pb2.py,nbcu_pb2_grpc.py,spot_selector_pb2.py
+ignore=
 
 # Pickle collected data for later comparisons.
 persistent=yes
