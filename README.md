@@ -4,6 +4,7 @@
 
 [![supported](https://img.shields.io/pypi/pyversions/flipy.svg)](https://pypi.python.org/pypi/flipy/)
 [![Build Status](http://img.shields.io/travis/freewheel/flipy.svg?style=flat-square)](https://travis-ci.com/freewheel/flipy) 
+[![Coverage](https://coveralls.io/repos/github/freewheel/flipy/badge.svg?branch=master)](https://coveralls.io/github/freewheel/flipy)
 
 Flipy is a Python linear programming interface library, originall developed by [FreeWheel](https://freewheel.com). It currently supports Gurobi and CBC as the backend solver.
 
