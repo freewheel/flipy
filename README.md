@@ -25,30 +25,46 @@ Here is a simple example for Flipy:
 ```python
 import flipy
 
-solver = flipy.CoinSolver()
+# 1 <= x <= 3.5
+x = flipy.LpVariable('x', low_bound=1, up_bound=3.5)
+# 2 <= y <= 4
+y = flipy.LpVariable('y', low_bound=2, up_bound=4)
 
-# 3 <= x <= 5, 0 <= y <= 10
-x = flipy.LpVariable('x', up_bound=5, low_bound=3)
-y = flipy.LpVariable('y', up_bound=10, low_bound=0)
+# 5x + y <= 12
+lhs = flipy.LpExpression('lhs', {x: 2.5, y: 1})
+rhs = flipy.LpExpression('rhs', constant=12) 
+constraint = flipy.LpConstraint(lhs, 'leq', rhs)
 
-# x + 2 = 3y + 4
-lhs = flipy.LpExpression('lhs', {x: 1}, constant=2)
-rhs = flipy.LpExpression('rhs', {y: 3}, constant=4) 
-constraint = flipy.LpConstraint(lhs, 'eq', rhs)
-
-# minimize: x + y => x = 3, y = 1/3
-objective = flipy.LpObjective('test_obj', {x: 1, y: 1})
+# maximize: 3x + 2y
+objective = flipy.LpObjective('test_obj', {x: 3, y: 2}, sense=flipy.Maximize)
 problem = flipy.LpProblem('test', objective, [constraint])
+
+solver = flipy.CBCSolver()
 status = solver.solve(problem)
 ```
 
-After solving, a status is returned to indicate whether the solver has found a optimal solution for the problem. The values for the variables can be retrieved by `.evaluate()`.
+## Get the solution 
+
+After solving, a status is returned to indicate whether the solver has found a optimal solution for the problem:
 
 ```python
 print(status)
 # <SolutionStatus.Optimal: 1>
-print(x.evaluate())
-# 3.0
-print(y.evaluate())
-# 0.3333333333333333
 ```
+
+The objective value can be retrieved with `objective.evaluate()`:
+
+```python
+print(objective.evaluate())
+# 17.6
+```
+
+The value of variables can be retrieved with `.evaluate()` as well:
+
+```python
+print(x.evaluate())
+# 3.2
+print(y.evaluate())
+# 4.0
+```
+

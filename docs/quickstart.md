@@ -15,7 +15,7 @@ nav_order: 2
 
 ---
 
-## Linear Programming
+## Linear programming
 
 *Linear programming* (*LP*, or *linear optimization*) is a method to compute the best solution (such as maximum revenue or lowest cost) to a problem modeled as a set of linear relationships.
 
@@ -58,7 +58,7 @@ constraint = flipy.LpConstraint(lhs, 'leq', rhs)
 objective = flipy.LpObjective('test_obj', {x: 3, y: 2}, sense=flipy.Maximize)
 problem = flipy.LpProblem('test', objective, [constraint])
 
-solver = flipy.CoinSolver()
+solver = flipy.CBCSolver()
 status = solver.solve(problem)
 ```
 

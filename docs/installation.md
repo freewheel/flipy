@@ -15,7 +15,7 @@ nav_order: 1
 
 ---
 
-## Python Version
+## Python versions
 
 Flipy suports Python 3.6 and newer.
 

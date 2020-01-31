@@ -4,7 +4,7 @@ from flipy.lp_reader import LpReader
 from flipy.lp_problem import LpProblem
 from flipy.lp_constraint import LpConstraint
 from flipy.lp_expression import LpExpression
-from flipy.solvers.cbc_solver import CoinSolver
+from flipy.solvers.cbc_solver import CBCSolver
 from flipy.lp_variable import LpVariable, VarType
 from flipy.solvers.base_solver import SolutionStatus
 try:

@@ -11,7 +11,7 @@ class SolverError(Exception):
     pass
 
 
-class CoinSolver:
+class CBCSolver:
     """ A class for interfacing with cbc to solve LPs"""
 
     STATUS_MAPPING = {
