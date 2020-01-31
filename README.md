@@ -13,12 +13,19 @@ Flipy requires Python 3.6 or newer.
 
 ## Installation
 
-Flipy can be installed with `setuptools`.
+The latest offical version of Flipy can be installed with `pip`:
+
 
 ```
-$ git clone https://github.freewheel.tv/linear/flipy
-$ cd flipy
-$ python setup.py install
+pip install flipy
+```
+
+The latest development version can be get with Git:
+
+```
+git clone https://github.com/freewheel/flipy.git
+cd flipy
+python setup.py install
 ```
 
 ## Quickstart
