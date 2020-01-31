@@ -13,6 +13,7 @@ setup(
     author="FreeWheel",
     description="FreeWheel Linear Programming Interface for Python",
     long_description=read('README.md'),
+    long_description_content_type='text/markdown',
     version=flipy.version,
     packages=find_packages(),
     include_package_data=True,

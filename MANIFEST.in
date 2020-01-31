@@ -1,0 +1,5 @@
+include flipy/solvers/bin/cbc-linux32/*
+include flipy/solvers/bin/cbc-linux64/*
+include flipy/solvers/bin/cbc-win32/*
+include flipy/solvers/bin/cbc-win64/*
+include flipy/solvers/bin/cbc-osx/*
