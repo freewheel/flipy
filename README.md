@@ -6,7 +6,7 @@
 [![Build Status](http://img.shields.io/travis/freewheel/flipy.svg?style=flat-square)](https://travis-ci.com/freewheel/flipy) 
 [![Coverage](https://coveralls.io/repos/github/freewheel/flipy/badge.svg?branch=master)](https://coveralls.io/github/freewheel/flipy)
 
-Flipy is a Python linear programming interface library, originall developed by [FreeWheel](https://freewheel.com). It currently supports Gurobi and CBC as the backend solver.
+Flipy is a Python linear programming interface library, originally developed by [FreeWheel](https://freewheel.com). It currently supports Gurobi and CBC as the backend solver.
 
 To use Gurobi, make sure you have a Gurobi license file, and gurobipy is installed in your Python environment. You can find details from [Gurobi’s documentation](https://www.gurobi.com/documentation/8.1/quickstart_mac/the_gurobi_python_interfac.html).
 
