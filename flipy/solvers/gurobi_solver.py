@@ -130,17 +130,17 @@ class GurobiSolver:
             The gurobi model to add the constraints to
         """
         for name, constraint in lp_problem.lp_constraints.items():
-            lhs_expr = [(coef, var.solver_var) for var, coef in constraint.lhs_expression.expr.items()]
+            lhs_expr = [(coef, var.solver_var) for var, coef in constraint.lhs.expr.items()]
             if constraint.slack:
                 self.add_variable(constraint.slack_variable,
                                   (-1 if lp_problem.lp_objective.sense == Maximize else 1) * constraint.slack_penalty,
                                   model)
                 lhs_expr += [((-1 if constraint.sense == 'leq' else 1), constraint.slack_variable.solver_var)]
             lhs_expr = gurobipy.LinExpr(lhs_expr)
-            lhs_expr.addConstant(constraint.lhs_expression.const)
+            lhs_expr.addConstant(constraint.lhs.const)
             rhs_expr = gurobipy.LinExpr(
-                [(coef, var.solver_var) for var, coef in constraint.rhs_expression.expr.items()])
-            rhs_expr.addConstant(constraint.rhs_expression.const)
+                [(coef, var.solver_var) for var, coef in constraint.rhs.expr.items()])
+            rhs_expr.addConstant(constraint.rhs.const)
             if constraint.sense.lower() == 'leq':
                 relation = gurobipy.GRB.LESS_EQUAL
             elif constraint.sense.lower() == 'geq':

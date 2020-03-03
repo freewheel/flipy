@@ -11,17 +11,17 @@ from flipy.utils import Numeric
 class LpConstraint:
     """ A class representing a linear constraint """
 
-    def __init__(self, lhs_expression: LpExpression, sense: str, rhs_expression: Optional[LpExpression] = None, name:
+    def __init__(self, lhs: LpExpression, sense: str, rhs: Optional[LpExpression] = None, name:
                  Optional[str] = None, slack: bool = False, slack_penalty: Numeric = 0, copy_expr: bool = False) -> None:
         """ Initialize the constraint
 
         Parameters
         ----------
-        lhs_expression:
+        lhs:
             The left-hand-side expression
         sense:
             The type of constraint (leq, geq, or eq)
-        rhs_expression:
+        rhs:
             The right-hand-side expression
         name:
             The name of the constraint
@@ -32,11 +32,11 @@ class LpConstraint:
         copy_expr:
             Whether to copy the lhs and rhs expressions
         """
-        self.lhs_expression = lhs_expression if not copy_expr else copy.copy(lhs_expression)
-        if rhs_expression:
-            self.rhs_expression = rhs_expression
+        self.lhs = lhs if not copy_expr else copy.copy(lhs)
+        if rhs:
+            self.rhs = rhs
         else:
-            self.rhs_expression = LpExpression()
+            self.rhs = LpExpression()
         self.sense = sense
         self.name = name or ''
         self.slack = slack
@@ -55,31 +55,31 @@ class LpConstraint:
         float
             The shifted rhs constant
         """
-        new_expr = LpExpression(expression=copy.copy(self.lhs_expression.expr))
+        new_expr = LpExpression(expression=copy.copy(self.lhs.expr))
 
-        for var, coeff in self.rhs_expression.expr.items():
+        for var, coeff in self.rhs.expr.items():
             new_expr.expr[var] -= coeff
 
         if self.slack:
             new_expr.expr[self.slack_variable] = -1 if self.sense == 'leq' else 1
 
-        const = self.rhs_expression.const - self.lhs_expression.const
+        const = self.rhs.const - self.lhs.const
         return new_expr, const
 
     def _shift_constant_right(self) -> None:
         """ Moves the constant on the lhs to the rhs """
-        if not self.lhs_expression.const:
+        if not self.lhs.const:
             return
-        self.rhs_expression.const -= self.lhs_expression.const
-        self.lhs_expression.const = 0
+        self.rhs.const -= self.lhs.const
+        self.lhs.const = 0
 
     @property
-    def lhs_expression(self) -> LpExpression:
+    def lhs(self) -> LpExpression:
         """ Getter for lhs expression """
-        return self._lhs_expression
+        return self._lhs
 
-    @lhs_expression.setter
-    def lhs_expression(self, lhs_exp: LpExpression) -> None:
+    @lhs.setter
+    def lhs(self, lhs_exp: LpExpression) -> None:
         """ Setter for lhs expression
 
         Raises
@@ -95,15 +95,15 @@ class LpConstraint:
         if not isinstance(lhs_exp, LpExpression):
             raise ValueError('LHS of LpConstraint must be LpExpression')
 
-        self._lhs_expression = lhs_exp  # pylint: disable=W0201
+        self._lhs = lhs_exp  # pylint: disable=W0201
 
     @property
-    def rhs_expression(self) -> LpExpression:
+    def rhs(self) -> LpExpression:
         """ Getter for rhs expression """
-        return self._rhs_expression
+        return self._rhs
 
-    @rhs_expression.setter
-    def rhs_expression(self, rhs_exp: LpExpression) -> None:
+    @rhs.setter
+    def rhs(self, rhs_exp: LpExpression) -> None:
         """ Setter for rhs expression
 
         Raises
@@ -119,7 +119,7 @@ class LpConstraint:
         if not isinstance(rhs_exp, LpExpression):
             raise ValueError('RHS of LpConstraint must be LpExpression')
 
-        self._rhs_expression = rhs_exp  # pylint: disable=W0201
+        self._rhs = rhs_exp  # pylint: disable=W0201
 
     @property
     def sense(self) -> str:
@@ -151,14 +151,14 @@ class LpConstraint:
         """ Returns the lower bound on the shifted expression """
         if self.sense == 'leq':
             return None
-        return self.rhs_expression.const - self.lhs_expression.const
+        return self.rhs.const - self.lhs.const
 
     @property
     def upper_bound(self) -> Optional[Numeric]:
         """ Returns the upper bound on the shifted expression """
         if self.sense == 'geq':
             return None
-        return self.rhs_expression.const - self.lhs_expression.const
+        return self.rhs.const - self.lhs.const
 
     @property
     def slack(self) -> bool:
@@ -226,10 +226,10 @@ class LpConstraint:
         """ Checks if the constraint is satisfied given variable assignments """
         return {'leq': operator.le,
                 'eq': operator.eq,
-                'geq': operator.ge}[self.sense](self.lhs_expression.evaluate() +
+                'geq': operator.ge}[self.sense](self.lhs.evaluate() +
                                                 (0 if not self.slack else self.slack_variable.evaluate() *
                                                  (-1 if self.sense == 'leq' else 1)),
-                                                self.rhs_expression.evaluate())
+                                                self.rhs.evaluate())
 
     def to_lp_terms(self):
         """

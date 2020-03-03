@@ -99,9 +99,9 @@ class LpProblem:
         if self.lp_constraints.get(lp_constraint.name, lp_constraint) != lp_constraint:
             raise NameError('LP constraint name %s conflicts with an existing LP constraint' % lp_constraint.name)
         self.lp_constraints[lp_constraint.name] = lp_constraint
-        for var in lp_constraint.lhs_expression.expr.keys():
+        for var in lp_constraint.lhs.expr.keys():
             self.add_variable(var)
-        for var in lp_constraint.rhs_expression.expr.keys():
+        for var in lp_constraint.rhs.expr.keys():
             self.add_variable(var)
 
     @staticmethod
