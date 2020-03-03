@@ -51,14 +51,14 @@ expr = flipy.LpExpression(expression={x: 3, y: 2}, constant=5)
 
 ## Constraint
 
-A constraint has 3 compontents: `lhs_expression`, `sense` and `rhs_expression`.
+A constraint has 3 compontents: `lhs`, `sense` and `rhs`.
 
-1. `lhs_expression`: The left-hand side expression of the constraint
+1. `lhs`: The left-hand side expression of the constraint
 2. `sense`: The sense of the constraint, can be one of:
     1. `leq`: The left-hand side expression must be less than or equal to the right hand side expression
     2. `eq`: The left-hand side expression must be equal to the right hand side expression
     2. `geq`: The left-hand side expression must be greater than or equal to the right hand side expression
-3. `rhs_expression`: The right-hand side expression of the constraint
+3. `rhs`: The right-hand side expression of the constraint
 
 $$
 x <= y + 10
