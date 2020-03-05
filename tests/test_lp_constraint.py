@@ -106,6 +106,17 @@ class TestLpConstraint:
         assert constraint.upper_bound == -5
         assert constraint.lower_bound == -5
 
+    def test_breakdown(self, lhs, rhs):
+        constraint = LpConstraint(lhs,
+                                  'eq',
+                                  rhs,
+                                  'test_constraint')
+        lower_bound_constraint, upper_bound_constraint = constraint.breakdown()
+        assert lower_bound_constraint.sense == 'geq'
+        assert lower_bound_constraint.name == 'test_constraint_lb'
+        assert upper_bound_constraint.sense == 'leq'
+        assert upper_bound_constraint.name == 'test_constraint_ub'
+
     def test_invalid_slack(self, lhs):
         with pytest.raises(ValueError) as e:
             LpConstraint(lhs, 'leq', slack='invalid')
