@@ -139,15 +139,11 @@ class LpExpression:
         slack = slack or {}
         for var in self.sorted_keys():
             coeff = self.expr[var]
-            if coeff == 0:
-                continue
             terms.append(self._to_lp_term_str(var.name, coeff, is_first=is_first))
             is_first = False
 
         for slack_var in sorted(slack.keys(), key=lambda v: v.name):
             coeff = slack[slack_var]
-            if coeff == 0:
-                continue
             terms.append(self._to_lp_term_str(slack_var.name, coeff, is_first=is_first))
             is_first = False
 

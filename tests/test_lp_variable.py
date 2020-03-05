@@ -18,31 +18,9 @@ class TestLpVariable(object):
         assert z.low_bound == 1
         assert z.up_bound == 4
 
-    def test_types(self):
-        with pytest.raises(ValueError) as e:
-            LpVariable('z', var_type='None')
-        assert 'var_type must be one of VarType.Continuous, VarType.Integer, VarType.Binary, not None' in str(e.value)
-        z = LpVariable('z', var_type=VarType.Integer)
-        with pytest.raises(ValueError) as e:
-            z.set_value(3.5)
-        assert 'must match var_type' in str(e.value)
-        z.set_value(3)
-        z = LpVariable('z', var_type=VarType.Binary)
-        with pytest.raises(ValueError) as e:
-            z.set_value(0.5)
-        assert 'must match var_type' in str(e.value)
-        z.set_value(0)
-        z.set_value(1)
-
     def test_value(self, x):
-        with pytest.raises(ValueError) as e:
-            x.evaluate()
-        assert 'is None' in str(e.value)
         x.set_value(2)
         assert x.evaluate() == 2
-        with pytest.raises(ValueError) as e:
-            x.set_value(12)
-        assert 'cannot be' in str(e.value)
 
     def test_write(self, x):
         assert x.to_lp_str() == 'x <= 10'
