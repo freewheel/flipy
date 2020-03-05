@@ -1,7 +1,7 @@
 import copy
 import operator
 import warnings
-from typing import Optional
+from typing import Optional, List
 
 from flipy.lp_expression import LpExpression
 from flipy.lp_variable import LpVariable, VarType
@@ -159,6 +159,24 @@ class LpConstraint:
         if self.sense == 'geq':
             return None
         return self.rhs.const - self.lhs.const
+
+    def breakdown(self) -> List['LpConstraint']:
+        if self.sense != 'eq':
+            return [self]
+
+        upper_bound_constraint = LpConstraint(
+            name=self.name + '_up',
+            lhs=LpExpression(expression=copy.copy(self.lhs.expr)),
+            rhs=LpExpression(expression=copy.copy(self.rhs.expr)),
+            sense='leq',
+            slack=self.slack,
+            slack_penalty=self.slack_penalty,
+        )
+
+        lower_bound_constraint = self
+        lower_bound_constraint.sense = 'geq'
+        lower_bound_constraint.name += '_lb'
+        return [lower_bound_constraint, upper_bound_constraint]
 
     @property
     def slack(self) -> bool:

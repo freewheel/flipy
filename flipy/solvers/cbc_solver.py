@@ -30,9 +30,11 @@ class CBCSolver:
         ('Windows', '64bit'): 'bin/cbc-win64/cbc.exe',
     }
 
-    def __init__(self) -> None:
+    def __init__(self, ratio_gap=None, timeout=None) -> None:
         """ Initialize the solver """
         self.bin_path = os.getenv('CBC_SOLVER_BIN', self._find_cbc_binary())
+        self.ratio_gap = ratio_gap
+        self.timeout = timeout
 
     @classmethod
     def _find_cbc_binary(cls) -> str:
@@ -87,7 +89,7 @@ class CBCSolver:
         self.call_cbc(f.name, solution_file_path)
 
         if not os.path.exists(solution_file_path):
-            raise SolverError("Error while trying to solve the problem")
+            return SolutionStatus.NotSolved
 
         return self.read_solution(solution_file_path, lp_problem)
 
@@ -107,7 +109,14 @@ class CBCSolver:
             Where to record the solution
         """
         pipe = open(os.devnull, 'w')
-        args = [self.bin_path, lp_file_path, 'branch', 'printingOptions', 'all', 'solution', solution_file_path]
+
+        args = [self.bin_path, lp_file_path]
+        if self.timeout:
+            args.extend(['sec', str(self.timeout)])
+        if self.ratio_gap is not None:
+            args.extend(['ratio', str(self.ratio_gap)])
+        args.extend(['branch', 'printingOptions', 'all', 'solution', solution_file_path])
+
         coin_proc = subprocess.Popen(args, stderr=pipe, stdout=pipe)
         if coin_proc.wait() != 0:
             raise SolverError(f"Error while trying to execute {self.bin_path}")

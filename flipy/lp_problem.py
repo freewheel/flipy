@@ -105,7 +105,7 @@ class LpProblem:
             self.add_variable(var)
 
     @staticmethod
-    def _group_terms(terms, max_line_length=120):
+    def _group_terms(terms, max_line_length=80):
         """ Groups terms into list of lines. Each line doesn't exceed certain width.
 
         Parameters
@@ -181,8 +181,10 @@ class LpProblem:
                 buffer.write(line)
                 buffer.write('\n')
 
+        sorted_lp_variables = sorted(self.lp_variables.values(), key=lambda v: v.name)
+
         # Bounded variables
-        bounded_vars = [var for var in self.lp_variables.values() if not var.is_positive_free()]
+        bounded_vars = [var for var in sorted_lp_variables if not var.is_positive_free()]
         if bounded_vars:
             buffer.write("Bounds\n")
             for var in bounded_vars:
@@ -190,7 +192,7 @@ class LpProblem:
 
         # Integer non-binary variables
         integer_vars = [
-            var for var in self.lp_variables.values() if (var.var_type is VarType.Integer and not var.is_binary())
+            var for var in sorted_lp_variables if (var.var_type is VarType.Integer)
         ]
         if integer_vars:
             buffer.write("Generals\n")
@@ -198,7 +200,7 @@ class LpProblem:
                 buffer.write(f"{var.name}\n")
 
         # Binary variables
-        binary_vars = [var for var in self.lp_variables.values() if var.var_type is VarType.Binary]
+        binary_vars = [var for var in sorted_lp_variables if var.var_type is VarType.Binary]
         if binary_vars:
             buffer.write("Binaries\n")
             for var in binary_vars:

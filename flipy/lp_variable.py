@@ -94,18 +94,6 @@ class LpVariable:
         value:
             The value to set for the variable
         """
-        if self.low_bound is not None:
-            if self.low_bound > value:
-                raise ValueError(f'value {value} cannot be below lower bound {self.low_bound}')
-        if self.up_bound is not None:
-            if self.up_bound < value:
-                raise ValueError(f'value {value} cannot be above upper bound {self.up_bound}')
-        if self.var_type is VarType.Integer:
-            if int(value) != value:
-                raise ValueError(f'value {value} must match var_type {self.var_type}')
-        if self.var_type is VarType.Binary:
-            if value not in [0, 1]:
-                raise ValueError('value {v} must match var_type {t}'.format(v=value, t=self.var_type))
         self._value = value
 
     @property
@@ -164,10 +152,6 @@ class LpVariable:
             if bound < self.low_bound:
                 raise ValueError('upper bound {u} cannot be below lower bound {low}'.format(u=bound, low=self.low_bound))
         self._up_bound = bound
-
-    def is_binary(self) -> bool:
-        """ Tells whether the variable is binary """
-        return self._var_type == VarType.Integer and self.low_bound == 0 and self.up_bound == 1
 
     def is_positive_free(self) -> bool:
         """ Tells whether the variable is an unbounded non-negative """
