@@ -75,8 +75,9 @@ class LpProblem:
             raise TypeError('%s is not an LpObjective' % lp_objective)
         if self.lp_objective:
             raise Exception('LP objective is already set')
-        for var in lp_objective.expr.keys():
+        for var, coeff in lp_objective.expr.items():
             self.add_variable(var)
+            var.set_obj_coeff(coeff)
         self.lp_objective = lp_objective
 
     def add_constraint(self, lp_constraint: LpConstraint) -> None:

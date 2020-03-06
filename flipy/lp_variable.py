@@ -46,6 +46,7 @@ class LpVariable:
             self._up_bound = up_bound
             self._low_bound = low_bound
         self._value = None
+        self._obj_coeff = None
 
     @property
     def name(self) -> str:
@@ -80,6 +81,21 @@ class LpVariable:
         if self._value is None:
             raise ValueError('Value of variable %s is None' % self.name)
         return self._value
+
+    def set_obj_coeff(self, coeff: Numeric):
+        """ Setter for the objective coefficient of this variable
+
+        Parameters
+        ----------
+        coeff
+            The coefficient of the variable in the objective function
+        """
+        self._obj_coeff = coeff
+
+    @property
+    def obj_coeff(self):
+        """ Getter for the coefficient of the variable in the objective function """
+        return self._obj_coeff or 0
 
     def set_value(self, value: Numeric) -> None:
         """ Setter for the value of the variable. Raises errors if not in bounds or if mismatched type.

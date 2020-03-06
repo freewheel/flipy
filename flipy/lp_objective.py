@@ -1,4 +1,4 @@
-from typing import Optional, Mapping, Union
+from typing import Optional, Mapping, Union, Type
 from flipy.lp_variable import LpVariable
 from flipy.lp_expression import LpExpression
 from flipy.utils import Numeric
@@ -12,7 +12,7 @@ class Maximize:
     """ A class representing a maximization problem """
 
 
-ObjectiveType = Union[Minimize, Maximize]
+ObjectiveType = Type[Union[Minimize, Maximize]]
 
 
 class LpObjective(LpExpression):

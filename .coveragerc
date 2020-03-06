@@ -1,0 +1,2 @@
+[run]
+omit = flipy/solvers/gurobi_solver.py
