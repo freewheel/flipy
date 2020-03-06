@@ -49,6 +49,7 @@ class TestLpProblem(object):
         with pytest.raises(Exception) as e:
             problem.set_objective(objective)
         assert e.value.args == ('LP objective is already set',)
+        assert x.obj_coeff == 998
 
     def test_add_constraint(self, problem, x):
         rhs = LpExpression('rhs', {x: 1})
