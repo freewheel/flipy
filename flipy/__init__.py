@@ -16,4 +16,4 @@ except ImportError:
             raise ModuleNotFoundError('gurobipy not installed')
 from flipy.lp_objective import LpObjective, Minimize, Maximize
 
-version = '0.0.3'
+version = '0.0.4'
