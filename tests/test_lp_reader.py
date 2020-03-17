@@ -89,6 +89,7 @@ class TestLpReader:
 
     def test_trim_comments(self):
         assert LpReader._remove_comments('\\* this is a comment section  *\\') == ''
+        assert LpReader._remove_comments('\\* 47caef78e069c0a6d2e4d0eb_relaxation_1 *\\\nMaximize\nOBJ:') == '\nMaximize\nOBJ:'
 
         assert LpReader._remove_comments('before \\* this is a comment section  *\\ after') == 'before  after'
 

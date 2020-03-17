@@ -80,6 +80,7 @@ class GurobiSolver:
             model.setAttr("ModelSense", -1)
 
         variables = list(lp_problem.lp_variables.values())
+        self.add_slack_variables(lp_problem, model)
         self.add_variables(variables, model)
         self.add_constraints(lp_problem, model)
         model.optimize()
@@ -125,7 +126,24 @@ class GurobiSolver:
             self.add_variable(var, var.obj_coeff, model)
         model.update()
 
-    def add_constraints(self, lp_problem: LpProblem, model: gurobipy.Model) -> None:
+    def add_slack_variables(self, lp_problem: LpProblem, model: gurobipy.Model) -> None:
+        """ Add the slack variables in a Flipy LpProblem to a gurobi model
+
+        Parameters
+        ----------
+        lp_problem:
+            The Flipy object to grab the constraints from
+        model:
+            The gurobi model to add the constraints to
+        """
+        for _, constraint in lp_problem.lp_constraints.items():
+            if constraint.slack:
+                self.add_variable(constraint.slack_variable,
+                                  (-1 if lp_problem.lp_objective.sense == Maximize else 1) * constraint.slack_penalty,
+                                  model)
+
+    @staticmethod
+    def add_constraints(lp_problem: LpProblem, model: gurobipy.Model) -> None:
         """ Add the constraints in a Flipy LpProblem to a gurobi model
 
         Parameters
@@ -138,9 +156,6 @@ class GurobiSolver:
         for name, constraint in lp_problem.lp_constraints.items():
             lhs_expr = [(coef, var.solver_var) for var, coef in constraint.lhs.expr.items()]
             if constraint.slack:
-                self.add_variable(constraint.slack_variable,
-                                  (-1 if lp_problem.lp_objective.sense == Maximize else 1) * constraint.slack_penalty,
-                                  model)
                 lhs_expr += [((-1 if constraint.sense == 'leq' else 1), constraint.slack_variable.solver_var)]
             lhs_expr = gurobipy.LinExpr(lhs_expr)
             lhs_expr.addConstant(constraint.lhs.const)
