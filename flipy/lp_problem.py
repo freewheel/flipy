@@ -152,11 +152,12 @@ class LpProblem:
         if not self.lp_objective:
             raise Exception('No objective')
 
-        buffer.write(f'\\* {self.name} *\\\n')
+        lines = [f'\\* {self.name} *\\']
+
         if self.lp_objective.sense == Minimize:
-            buffer.write('Minimize\n')
+            lines.append('Minimize')
         else:
-            buffer.write('Maximize\n')
+            lines.append('Maximize')
 
         objective_name = self.lp_objective.name if self.lp_objective.name else "OBJ"
 
@@ -168,43 +169,42 @@ class LpProblem:
         obj_lines = self._group_terms(terms)
 
         for obj_line in obj_lines:
-            buffer.write(obj_line)
-            buffer.write('\n')
+            lines.append(obj_line)
 
-        buffer.write("Subject To\n")
+        lines.append("Subject To")
 
-        constraints = sorted(self.lp_constraints.keys())
-        for con in constraints:
+        constraint_names = sorted(self.lp_constraints.keys())
+        for con in constraint_names:
             constraint = self.lp_constraints[con]
             terms = [f'{con}:'] + constraint.to_lp_terms()
             cons_lines = self._group_terms(terms)
             for line in cons_lines:
-                buffer.write(line)
-                buffer.write('\n')
+                lines.append(line)
 
         sorted_lp_variables = sorted(self.lp_variables.values(), key=lambda v: v.name)
 
         # Bounded variables
         bounded_vars = [var for var in sorted_lp_variables if not var.is_positive_free()]
         if bounded_vars:
-            buffer.write("Bounds\n")
+            lines.append("Bounds")
             for var in bounded_vars:
-                buffer.write(f"{var.to_lp_str()}\n")
+                lines.append(f"{var.to_lp_str()}")
 
         # Integer non-binary variables
         integer_vars = [
             var for var in sorted_lp_variables if (var.var_type is VarType.Integer)
         ]
         if integer_vars:
-            buffer.write("Generals\n")
+            lines.append("Generals")
             for var in integer_vars:
-                buffer.write(f"{var.name}\n")
+                lines.append(f"{var.name}")
 
         # Binary variables
         binary_vars = [var for var in sorted_lp_variables if var.var_type is VarType.Binary]
         if binary_vars:
-            buffer.write("Binaries\n")
+            lines.append("Binaries")
             for var in binary_vars:
-                buffer.write(f"{var.name}\n")
+                lines.append(f"{var.name}")
 
-        buffer.write("End\n")
+        lines.append("End")
+        buffer.write('\n'.join(lines))
