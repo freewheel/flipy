@@ -176,8 +176,12 @@ class LpProblem:
         constraint_names = sorted(self.lp_constraints.keys())
         for con in constraint_names:
             constraint = self.lp_constraints[con]
-            terms = [f'{con}:'] + constraint.to_lp_terms()
-            cons_lines = self._group_terms(terms)
+
+            constraint_terms = constraint.to_lp_terms()
+            if not constraint_terms:
+                continue
+
+            cons_lines = self._group_terms([f'{con}:'] + constraint_terms)
             for line in cons_lines:
                 lines.append(line)
 

@@ -92,3 +92,13 @@ class TestLpProblem(object):
         problem.write_lp(buffer)
         flipy_string = buffer.getvalue()
         assert flipy_string == '\\* test_problem *\\\nMaximize\nminimize_cpm: 998 x - 100 constraint_slack_variable + 8\nSubject To\nconstraint: - constraint_slack_variable + x <= -2\nBounds\nx <= 10\nEnd'
+
+    def test_write_with_empty_constraint(self, problem, x):
+        objective = LpObjective(name='minimize_cpm', expression={x: 998}, constant=8, sense=Maximize)
+        constraint = LpConstraint(LpExpression('lhs', {x: 0}), 'leq', LpExpression('rhs', {}), 'constraint')
+        problem.add_constraint(constraint)
+        problem.set_objective(objective)
+        buffer = StringIO()
+        problem.write_lp(buffer)
+        flipy_string = buffer.getvalue()
+        assert flipy_string == '\\* test_problem *\\\nMaximize\nminimize_cpm: 998 x + 8\nSubject To\nBounds\nx <= 10\nEnd'
