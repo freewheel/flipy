@@ -261,6 +261,9 @@ class LpConstraint:
         """
         new_expr, const = self._shift_variables()
 
+        if not any(new_expr.expr.values()):
+            return []
+
         if self.sense.lower() == 'leq':
             sense = '<='
         elif self.sense.lower() == 'geq':
