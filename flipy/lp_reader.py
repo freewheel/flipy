@@ -334,7 +334,7 @@ class LpReader:
 
         obj_name, obj_expr, obj_coeff = cls._parse_named_expression(sections['objective'])
         constraints = cls._parse_constraints(sections['constraints']) if 'constraints' in sections else []
-        bounds = cls._parse_bounds(sections['bounds']) if 'bounds' in sections else []
+        bounds = cls._parse_bounds(sections['bounds']) if 'bounds' in sections else {}
         generals = cls._parse_generals(sections['generals']) if 'generals' in sections else []
         binaries = cls._parse_binaries(sections['binaries']) if 'binaries' in sections else []
 
