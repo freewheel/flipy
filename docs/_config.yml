@@ -13,7 +13,7 @@ search_enabled: true
 # Aux links for the upper right navigation
 aux_links:
   "Flipy on GitHub":
-    - "//github.freewheel.tv/linear/flipy"
+    - "//github.com/freewheel/flipy"
 
 # Color scheme currently only supports "dark" or nil (default)
 color_scheme: nil
