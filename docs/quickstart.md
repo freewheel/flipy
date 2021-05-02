@@ -1,20 +1,3 @@
----
-layout: default
-title: Quickstart
-nav_order: 2
----
-
-# Quickstart
-{: .no_toc }
-
-## Table of contents
-{: .no_toc .text-delta }
-
-1. TOC
-{:toc}
-
----
-
 ## Linear programming
 
 *Linear programming* (*LP*, or *linear optimization*) is a method to compute the best solution (such as maximum revenue or lowest cost) to a problem modeled as a set of linear relationships.
@@ -26,14 +9,14 @@ nav_order: 2
 Here is a simple example of a linear programming problem:
 
 \begin{align}
-& \text{Maximize} && \mathbf{3x + 2y} \\\\ & \text{subject to} && \mathbf{2.5x + y <= 12} \\\\ & \text{and} && \mathbf{1 \leq x \leq 3.5} \\\\ & \text{and} && \mathbf{2 \leq y \leq 4} \\\\
+& \text{Maximize} && \mathbf{3x + 2y} \\ & \text{subject to} && \mathbf{2.5x + y <= 12} \\ & \text{and} && \mathbf{1 \leq x \leq 3.5} \\ & \text{and} && \mathbf{2 \leq y \leq 4}
 \end{align}
 
-The objective here is to maximize the value of $$3x + 2y$$, with constriants given as linear expressions.
+The objective here is to maximize the value of $3x + 2y$, with constriants given as linear expressions.
 
 The three constraints defined a feasible region shown as below:
 
-![A simple problem]({{site.baseurl}}/assets/images/simple-problem.png)
+![A simple problem](assets/images/simple-problem.png)
 
 The objective here is to find a spot that maximizes $$3x + 2y$$ in the above region.
 
@@ -87,4 +70,4 @@ print(y.evaluate())
 # 4.0
 ```
 
-![Solution]({{site.baseurl}}/assets/images/simple-problem-solution.png)
+![Solution](assets/images/simple-problem-solution.png)

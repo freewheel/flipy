@@ -307,6 +307,7 @@ class LpReader:
         Parameters
         ----------
         obj: str or buffer
+            The content of an LP file as a string or read buffer
 
         Returns
         -------

@@ -45,6 +45,7 @@ class LpObjective(LpExpression):
         Returns
         -------
         flipy.lp_objective.ObjectiveType
+            The sense of the linear objective, i.e. minimize or maximize
         """
         return self._sense
 
