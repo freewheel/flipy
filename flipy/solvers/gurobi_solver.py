@@ -222,22 +222,22 @@ class GurobiFileSolver(GurobiSolver):
         flipy.SolutionStatus
             The status of the solution
         """
-        temp_dir = tempfile.TemporaryDirectory()
-        problem_file_path = os.path.join(temp_dir.name, 'problem.lp')
-        solution_file_path = os.path.join(temp_dir.name, 'solution.sol')
+        with tempfile.TemporaryDirectory() as temp_dir:
+            problem_file_path = os.path.join(temp_dir.name, 'problem.lp')
+            solution_file_path = os.path.join(temp_dir.name, 'solution.sol')
 
-        with open(problem_file_path, 'w') as f:
-            lp_problem.write_lp(f)
+            with open(problem_file_path, 'w') as f:
+                lp_problem.write_lp(f)
 
-        model = gurobipy.read(problem_file_path)
+            model = gurobipy.read(problem_file_path)
 
-        model.setParam('MIPGap', self.mip_gap)
-        if self.timeout is not None:
-            model.setParam('TimeLimit', self.timeout)
+            model.setParam('MIPGap', self.mip_gap)
+            if self.timeout is not None:
+                model.setParam('TimeLimit', self.timeout)
 
-        model.optimize()
-        model.write(solution_file_path)
-        self.read_solution(solution_file_path, lp_problem)
+            model.optimize()
+            model.write(solution_file_path)
+            self.read_solution(solution_file_path, lp_problem)
         return self.STATUS_MAPPING[model.Status]
 
     @classmethod

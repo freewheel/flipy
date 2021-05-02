@@ -52,13 +52,16 @@ confidence=
 # --disable=W"
 
 disable=arguments-differ,
-    missing-module-docstring,
-	duplicate-code,
-	abstract-method,
-	unused-argument,
-    too-many-instance-attributes,
-    too-many-public-methods,
-    too-many-ancestors
+  duplicate-code,
+  raise-missing-from,
+  missing-module-docstring,
+  invalid-name,
+  uplicate-code,
+  bstract-method,
+  nused-argument,
+  too-many-instance-attributes,
+  too-many-public-methods,
+  too-many-ancestors
 
 
 [REPORTS]
