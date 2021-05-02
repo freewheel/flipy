@@ -1,20 +1,3 @@
----
-layout: default
-title: Installation
-nav_order: 1
----
-
-# Installation
-{: .no_toc }
-
-## Table of contents
-{: .no_toc .text-delta }
-
-1. TOC
-{:toc}
-
----
-
 ## Python versions
 
 Flipy suports Python 3.6 and newer.

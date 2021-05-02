@@ -1,0 +1,87 @@
+site_name: Flipy - FreeWheel Linear Programming Interface
+strict: true
+copyright: Copyright &copy; 2021 Flipy Authors
+site_url: https://freewheel.github.io/flipy
+site_description: >-
+  Flipy is a unified interface for creating and solving Linear Programming problems on different solvers like Cbc or Gurobi.
+repo_name: freewheel/flipy
+repo_url: https://github.com/freewheel/flipy
+
+nav:
+  - Overview: index.md
+  - Installation: installation.md
+  - Quickstart: quickstart.md
+  - Basic Usage: basic_usage.md
+  - API Reference:
+    - LpProblem: api-reference/lp-problem.md
+    - LpConstraint: api-reference/lp-constraint.md
+    - LpExpression: api-reference/lp-expression.md
+    - LpObjective: api-reference/lp-objective.md
+    - LpVariable: api-reference/lp-variable.md
+    - LpReader: api-reference/lp-reader.md
+    - solvers.CBCSolver: api-reference/solvers-cbc-solver.md
+    - solvers.GurobiSolver: api-reference/solvers-gurobi-solver.md
+
+theme:
+  logo: assets/images/flipy.png
+  favicon: assets/images/flipy.png
+  name: material
+  custom_dir: docs/overrides
+  font:
+    text: Work Sans
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - scheme: slate
+      primary: red
+      accent: red
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/freewheel/flipy
+
+extra_css:
+  - stylesheets/extra.css
+
+extra_javascript:
+  - js/config.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - codehilite
+  - pymdownx.superfences
+  - pymdownx.tabbed
+  - pymdownx.details
+  - pymdownx.snippets
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
+
+plugins:
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          rendering:
+            show_root_heading: false
+            show_source: true
+            show_category_heading: true
+          selection:
+            docstring_style: numpy
+            filters:
+              - "!^_"  # exlude all members starting with _

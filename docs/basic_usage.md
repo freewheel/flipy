@@ -1,20 +1,3 @@
----
-layout: default
-title: Flipy Basics
-nav_order: 3
----
-
-# Flipy basics
-{: .no_toc }
-
-## Table of contents
-{: .no_toc .text-delta }
-
-1. TOC
-{:toc}
-
----
-
 ## Variable
 
 Create a variable with `flipy.LpVariable`:
@@ -29,7 +12,7 @@ Integer and binary variable types are also available:
 
 ```python
 y = flipy.LpVariable('y', var_type=flipy.VarType.Integer, low_bound=1, up_bound=5)
-z = flipy.LpVariable('y', var_type=flipy.VarType.Binary)
+z = flipy.LpVariable('z', var_type=flipy.VarType.Binary)
 ```
 
 `y` can take any integer value from 1 to 5 (1, 2, 3, 4, 5), while `z` can only take 0 or 1.
