@@ -33,7 +33,7 @@ class LpObjective(LpExpression):
         sense:
             Whether to minimize or maximize the objective
         """
-        super(LpObjective, self).__init__(name, expression, constant)
+        super().__init__(name, expression, constant)
         self._sense = None
 
         self.sense = sense

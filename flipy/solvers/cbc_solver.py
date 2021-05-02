@@ -91,17 +91,17 @@ class CBCSolver:
         flipy.SolutionStatus
             The status of the solution
         """
-        temp_dir = tempfile.TemporaryDirectory()
-        lp_file_path = os.path.join(temp_dir.name, 'problem.lp')
-        solution_file_path = os.path.join(temp_dir.name, 'solution.sol')
+        with tempfile.TemporaryDirectory() as temp_dir:
+            lp_file_path = os.path.join(temp_dir.name, 'problem.lp')
+            solution_file_path = os.path.join(temp_dir.name, 'solution.sol')
 
-        with open(lp_file_path, 'w') as f:
-            lp_problem.write_lp(f)
+            with open(lp_file_path, 'w') as f:
+                lp_problem.write_lp(f)
 
-        self.call_cbc(f.name, solution_file_path)
+            self.call_cbc(f.name, solution_file_path)
 
-        if not os.path.exists(solution_file_path):
-            return SolutionStatus.NotSolved
+            if not os.path.exists(solution_file_path):
+                return SolutionStatus.NotSolved
 
         return self.read_solution(solution_file_path, lp_problem)
 
@@ -120,19 +120,18 @@ class CBCSolver:
         solution_file_path:
             Where to record the solution
         """
-        pipe = open(os.devnull, 'w')
+        with open(os.devnull, 'w') as pipe:
 
-        args = [self.bin_path, lp_file_path]
-        if self.timeout:
-            args.extend(['sec', str(self.timeout)])
-        if self.mip_gap:
-            args.extend(['ratio', str(self.mip_gap)])
-        args.extend(['branch', 'printingOptions', 'all', 'solution', solution_file_path])
+            args = [self.bin_path, lp_file_path]
+            if self.timeout:
+                args.extend(['sec', str(self.timeout)])
+            if self.mip_gap:
+                args.extend(['ratio', str(self.mip_gap)])
+            args.extend(['branch', 'printingOptions', 'all', 'solution', solution_file_path])
 
-        coin_proc = subprocess.Popen(args, stderr=pipe, stdout=pipe)
-        if coin_proc.wait() != 0:
-            raise SolverError(f"Error while trying to execute {self.bin_path}")
-        pipe.close()
+            with subprocess.Popen(args, stderr=pipe, stdout=pipe) as coin_proc:
+                if coin_proc.wait() != 0:
+                    raise SolverError(f"Error while trying to execute {self.bin_path}")
 
     @classmethod
     def read_solution(cls, filename: str, lp_problem: LpProblem) -> SolutionStatus:
