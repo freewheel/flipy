@@ -1,4 +1,4 @@
-![Flipy](assets/images/flipy.png)
+<img width=180 src="assets/images/flipy.svg"></img>
 
 # Flipy
 
@@ -6,5 +6,5 @@ Welcome to Flipy’s documentation! Flipy is a unified interface for creating an
 
 Get started with [Installation](./installation.md) and then get to an overview with the [Quickstart](./quickstart.md).
 
-[Getting started](./quickstart.md){ .md-button }
+[Get started](./installation.md){ .md-button }
 [View on GitHub :fontawesome-brands-github:](//github.com/freewheel/flipy){ .md-button .md-button--primary }

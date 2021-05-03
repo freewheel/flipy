@@ -1,2 +1,3 @@
 [run]
+relative_files = True
 omit = flipy/solvers/gurobi_solver.py
