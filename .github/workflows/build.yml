@@ -34,3 +34,8 @@ jobs:
     - name: Build docs
       run: |
         mkdocs build
+
+    - name: Coveralls
+      uses: AndreMiras/coveralls-python-action@develop
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}

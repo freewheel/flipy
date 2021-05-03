@@ -2,7 +2,7 @@ import pytest
 
 from flipy.lp_problem import LpProblem
 from flipy.lp_objective import LpObjective, Maximize
-from flipy.lp_variable import LpVariable
+from flipy.lp_variable import LpVariable, VarType
 from flipy.lp_expression import LpExpression
 from flipy.lp_constraint import LpConstraint
 
@@ -50,6 +50,10 @@ class TestLpProblem(object):
             problem.set_objective(objective)
         assert e.value.args == ('LP objective is already set',)
         assert x.obj_coeff == 998
+
+        with pytest.raises(Exception) as e:
+            problem.set_objective('invalid')
+        assert e.value.args == ('invalid is not an LpObjective',)
 
     def test_add_constraint(self, problem, x):
         rhs = LpExpression('rhs', {x: 1})
@@ -102,3 +106,66 @@ class TestLpProblem(object):
         problem.write_lp(buffer)
         flipy_string = buffer.getvalue()
         assert flipy_string == '\\* test_problem *\\\nMaximize\nminimize_cpm: 998 x + 8\nSubject To\nBounds\nx <= 10\nEnd'
+
+    def test_write_long(self, problem, x):
+        a = LpVariable('a', low_bound=0, up_bound=10, var_type=VarType.Integer)
+        b = LpVariable('b', low_bound=0, up_bound=10, var_type=VarType.Integer)
+        c = LpVariable('c', low_bound=0, up_bound=10, var_type=VarType.Integer)
+        d = LpVariable('d', low_bound=0, up_bound=10, var_type=VarType.Integer)
+        e = LpVariable('e', var_type=VarType.Binary)
+        f = LpVariable('f', var_type=VarType.Binary)
+        g = LpVariable('g', var_type=VarType.Binary)
+        h = LpVariable('h', var_type=VarType.Binary)
+        vars = [a, b, c, d, e, f, g, h]
+
+        # make sure objective is long enough to test the line break
+        objective = LpObjective(name='minimize_cpm', expression={v: 3.1415926535 for v in vars}, constant=8)
+
+        rhs = LpExpression('rhs', {a: 1000, b: 1000, c: 1000, d: 1000})
+        lhs = LpExpression('lhs', {}, -2)
+        constraint = LpConstraint(rhs, 'geq', lhs, 'constraint')
+
+        problem.add_constraint(constraint)
+        problem.set_objective(objective)
+        buffer = StringIO()
+        problem.write_lp(buffer)
+        lp_str = buffer.getvalue()
+        assert lp_str.split('\n') == [
+            '\\* test_problem *\\',
+            'Minimize',
+            'minimize_cpm: 3.1415926535 a + 3.1415926535 b + 3.1415926535 c + 3.1415926535 d',
+            '+ 3.1415926535 e + 3.1415926535 f + 3.1415926535 g + 3.1415926535 h + 8',
+            'Subject To',
+            'constraint: 1000 a + 1000 b + 1000 c + 1000 d >= -2',
+            'Bounds',
+            '0 <= a <= 10',
+            '0 <= b <= 10',
+            '0 <= c <= 10',
+            '0 <= d <= 10',
+            '0 <= e <= 1',
+            '0 <= f <= 1',
+            '0 <= g <= 1',
+            '0 <= h <= 1',
+            'Generals',
+            'a',
+            'b',
+            'c',
+            'd',
+            'Binaries',
+            'e',
+            'f',
+            'g',
+            'h',
+            'End'
+        ]
+
+    def test_write_no_objective(self, problem, x):
+        rhs = LpExpression('rhs', {x: 1})
+        lhs = LpExpression('lhs', {}, -2)
+        constraint = LpConstraint(rhs, 'geq', lhs, 'constraint')
+        problem.add_constraint(constraint)
+        buffer = StringIO()
+
+        with pytest.raises(Exception) as e:
+            problem.write_lp(buffer)
+        assert e.value.args == ('No objective',)
